@@ -1,5 +1,27 @@
 export async function handler(event) {
 
+  /* ===============================
+     HANDLE GET (CREDIT STATUS)
+  =============================== */
+
+  if (event.httpMethod === "GET") {
+
+    return {
+      statusCode: 200,
+      body: JSON.stringify({
+        creditsUsed: 0,
+        maxCredits: 10,
+        resetAt: Date.now() + 86400000
+      })
+    };
+
+  }
+
+
+  /* ===============================
+     ONLY POST ALLOWED
+  =============================== */
+
   if (event.httpMethod !== "POST") {
     return {
       statusCode: 405,
@@ -37,14 +59,71 @@ Rules:
 4. Then short summary.
 `;
 
+
+
   /* ===============================
-     TRY GEMINI FIRST
+     TRY GROQ FIRST (FASTER)
+  =============================== */
+
+  try {
+
+    const groqRes = await fetch(
+      "https://api.groq.com/openai/v1/chat/completions",
+      {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${process.env.GROQ_API_KEY}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          model: "llama3-8b-8192",
+          messages: [
+            { role: "system", content: systemPrompt },
+            { role: "user", content: prompt }
+          ],
+          temperature: 0.2
+        })
+      }
+    );
+
+    if (groqRes.ok) {
+
+      const groqData = await groqRes.json();
+
+      const text =
+        groqData?.choices?.[0]?.message?.content ||
+        "No answer";
+
+      const lines = text.split("\n");
+
+      return {
+        statusCode: 200,
+        body: JSON.stringify({
+          source: "groq",
+          finalAnswer: lines[0] || text,
+          explanation: text,
+          summary: lines.slice(1).join(" ").slice(0,120)
+        })
+      };
+
+    }
+
+  } catch (err) {
+
+    console.log("Groq failed → switching to Gemini");
+
+  }
+
+
+
+  /* ===============================
+        GEMINI FALLBACK
   =============================== */
 
   try {
 
     const geminiRes = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${process.env.VITE_GEMINI_API_KEY}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
       {
         method: "POST",
         headers: {
@@ -55,9 +134,7 @@ Rules:
             {
               role: "user",
               parts: [
-                {
-                  text: `${systemPrompt}\n\n${prompt}`
-                }
+                { text: `${systemPrompt}\n\n${prompt}` }
               ]
             }
           ]
@@ -65,69 +142,14 @@ Rules:
       }
     );
 
-    if (geminiRes.ok) {
-
-      const geminiData = await geminiRes.json();
-
-      const text =
-        geminiData?.candidates?.[0]?.content?.parts?.[0]?.text ||
-        "No answer";
-
-      const lines = text.split("\n");
-
-      return {
-        statusCode: 200,
-        body: JSON.stringify({
-          source: "gemini",
-          finalAnswer: lines[0] || text,
-          explanation: text,
-          summary: lines.slice(1).join(" ").slice(0,120)
-        })
-      };
-
+    if (!geminiRes.ok) {
+      throw new Error("Gemini request failed");
     }
 
-  } catch (error) {
-
-    console.log("Gemini failed → switching to Groq");
-
-  }
-
-  /* ===============================
-        GROQ FALLBACK
-  =============================== */
-
-  try {
-
-    const groqRes = await fetch(
-      "https://api.groq.com/openai/v1/chat/completions",
-      {
-        method: "POST",
-        headers: {
-          "Authorization": `Bearer ${process.env.VITE_GROQ_API_KEY}`,
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          model: "llama3-8b-8192",
-          messages: [
-            {
-              role: "system",
-              content: systemPrompt
-            },
-            {
-              role: "user",
-              content: prompt
-            }
-          ],
-          temperature: 0.2
-        })
-      }
-    );
-
-    const groqData = await groqRes.json();
+    const geminiData = await geminiRes.json();
 
     const text =
-      groqData?.choices?.[0]?.message?.content ||
+      geminiData?.candidates?.[0]?.content?.parts?.[0]?.text ||
       "No answer";
 
     const lines = text.split("\n");
@@ -135,7 +157,7 @@ Rules:
     return {
       statusCode: 200,
       body: JSON.stringify({
-        source: "groq",
+        source: "gemini",
         finalAnswer: lines[0] || text,
         explanation: text,
         summary: lines.slice(1).join(" ").slice(0,120)
@@ -143,6 +165,8 @@ Rules:
     };
 
   } catch (error) {
+
+    console.log("Gemini failed");
 
     return {
       statusCode: 500,
