@@ -1,17 +1,9 @@
 import { Handler } from "@netlify/functions";
-import Groq from "groq-sdk";
-import { GoogleGenAI } from "@google/genai";
 
-interface UsageRecord {
-  ip: string;
-  creditsUsed: number;
-  windowStart: number;
-}
-
-const usageStore = new Map<string, UsageRecord>();
-
-const MAX_DAILY_CREDITS = 10;
+const MAX_CREDITS = 10;
 const WINDOW = 24 * 60 * 60 * 1000;
+
+const usage: Record<string, any> = {};
 
 export const handler: Handler = async (event) => {
 
@@ -22,194 +14,181 @@ export const handler: Handler = async (event) => {
 
   const now = Date.now();
 
-  let record = usageStore.get(ip);
-
-  if (!record) {
-    record = { ip, creditsUsed: 0, windowStart: now };
+  if (!usage[ip] || now > usage[ip].resetAt) {
+    usage[ip] = {
+      creditsUsed: 0,
+      resetAt: now + WINDOW
+    };
   }
 
-  if (now > record.windowStart + WINDOW) {
-    record = { ip, creditsUsed: 0, windowStart: now };
-  }
-
-  usageStore.set(ip, record);
-
-  const resetAt = record.windowStart + WINDOW;
-
+  const user = usage[ip];
 
   /* ===============================
-      GET → CREDIT STATUS
+      GET STATUS
   =============================== */
 
   if (event.httpMethod === "GET") {
     return {
       statusCode: 200,
       body: JSON.stringify({
-        creditsUsed: record.creditsUsed,
-        maxCredits: MAX_DAILY_CREDITS,
-        resetAt
+        creditsUsed: user.creditsUsed,
+        maxCredits: MAX_CREDITS,
+        resetAt: user.resetAt
       })
     };
   }
 
-
-  /* ===============================
-        POST → AI CALCULATION
-  =============================== */
+  /* =============================== */
 
   if (event.httpMethod !== "POST") {
-    return { statusCode: 405, body: "Method Not Allowed" };
+    return {
+      statusCode: 405,
+      body: JSON.stringify({ error: "Method not allowed" })
+    };
   }
+
+  if (user.creditsUsed >= MAX_CREDITS) {
+    return {
+      statusCode: 429,
+      body: JSON.stringify({
+        error: "Daily limit reached",
+        creditsUsed: user.creditsUsed,
+        maxCredits: MAX_CREDITS,
+        resetAt: user.resetAt
+      })
+    };
+  }
+
+  let body;
+
+  try {
+    body = JSON.parse(event.body || "{}");
+  } catch {
+    return {
+      statusCode: 400,
+      body: JSON.stringify({ error: "Invalid JSON" })
+    };
+  }
+
+  const prompt = body.prompt;
+
+  if (!prompt) {
+    return {
+      statusCode: 400,
+      body: JSON.stringify({ error: "Prompt required" })
+    };
+  }
+
+  const systemPrompt = `
+You are a calculator AI.
+
+Return answer like:
+First line = final answer only
+Then explanation
+Then summary
+`;
+
+  let provider = "groq";
+  let text = "";
+
+  /* ===============================
+     GROQ FIRST
+  =============================== */
 
   try {
 
-    if (record.creditsUsed >= MAX_DAILY_CREDITS) {
+    if (!process.env.GROQ_API_KEY)
+      throw new Error("Missing GROQ_API_KEY");
+
+    const groqRes = await fetch(
+      "https://api.groq.com/openai/v1/chat/completions",
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${process.env.GROQ_API_KEY}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          model: "llama3-8b-8192",
+          messages: [
+            { role: "system", content: systemPrompt },
+            { role: "user", content: prompt }
+          ],
+          temperature: 0.2
+        })
+      }
+    );
+
+    if (!groqRes.ok) throw new Error("Groq failed");
+
+    const data = await groqRes.json();
+
+    text = data?.choices?.[0]?.message?.content || "";
+
+  } catch {
+
+    provider = "gemini";
+
+    try {
+
+      if (!process.env.GEMINI_API_KEY)
+        throw new Error("Missing GEMINI_API_KEY");
+
+      const geminiRes = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            contents: [
+              {
+                parts: [
+                  { text: `${systemPrompt}\n\n${prompt}` }
+                ]
+              }
+            ]
+          })
+        }
+      );
+
+      if (!geminiRes.ok) throw new Error("Gemini failed");
+
+      const data = await geminiRes.json();
+
+      text =
+        data?.candidates?.[0]?.content?.parts?.[0]?.text ||
+        "No answer";
+
+    } catch {
 
       return {
-        statusCode: 429,
+        statusCode: 500,
         body: JSON.stringify({
-          error: "Daily limit reached",
-          creditsUsed: record.creditsUsed,
-          maxCredits: MAX_DAILY_CREDITS,
-          resetAt
+          error: "Both AI providers failed"
         })
       };
 
     }
 
-    const { prompt } = JSON.parse(event.body || "{}");
-
-    if (!prompt) {
-      return {
-        statusCode: 400,
-        body: JSON.stringify({ error: "Prompt required" })
-      };
-    }
-
-    const systemPrompt = `
-You are a calculator AI.
-
-Return JSON only:
-
-{
-"finalAnswer": "...",
-"explanation": "...",
-"summary": "..."
-}
-`;
-
-
-    /* ===============================
-            TRY GROQ FIRST
-    =============================== */
-
-    let provider = "groq";
-    let result: any = null;
-
-    try {
-
-      if (!process.env.GROQ_API_KEY)
-        throw new Error("Missing GROQ_API_KEY");
-
-      const groq = new Groq({
-        apiKey: process.env.GROQ_API_KEY
-      });
-
-      const completion = await groq.chat.completions.create({
-
-        model: "llama3-8b-8192",
-
-        messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: prompt }
-        ],
-
-        temperature: 0.2
-      });
-
-      const text = completion.choices[0]?.message?.content || "";
-
-      try {
-        result = JSON.parse(text);
-      } catch {
-        result = {
-          finalAnswer: text.split("\n")[0],
-          explanation: text,
-          summary: text.slice(0, 120)
-        };
-      }
-
-    } catch (groqErr) {
-
-      console.log("Groq failed → Gemini fallback");
-
-      provider = "gemini";
-
-      if (!process.env.GEMINI_API_KEY)
-        throw new Error("Missing GEMINI_API_KEY");
-
-      const gemini = new GoogleGenAI({
-        apiKey: process.env.GEMINI_API_KEY
-      });
-
-      const response = await gemini.models.generateContent({
-
-        model: "gemini-1.5-flash",
-
-        contents: prompt,
-
-        config: {
-          systemInstruction: systemPrompt,
-          responseMimeType: "application/json"
-        }
-
-      });
-
-      const text = response.text || "{}";
-
-      result = JSON.parse(text);
-
-    }
-
-
-    record.creditsUsed += 1;
-    usageStore.set(ip, record);
-
-
-    return {
-
-      statusCode: 200,
-
-      body: JSON.stringify({
-
-        finalAnswer: result.finalAnswer || "No result",
-        explanation: result.explanation || "",
-        summary: result.summary || "",
-        provider,
-
-        creditsUsed: record.creditsUsed,
-        maxCredits: MAX_DAILY_CREDITS,
-        resetAt
-
-      })
-
-    };
-
-  } catch (error: any) {
-
-    console.error("AI Function Error:", error);
-
-    return {
-
-      statusCode: 500,
-
-      body: JSON.stringify({
-        error: "AI server error",
-        details: error.message
-      })
-
-    };
-
   }
+
+  user.creditsUsed += 1;
+
+  const lines = text.split("\n");
+
+  return {
+    statusCode: 200,
+    body: JSON.stringify({
+      provider,
+      finalAnswer: lines[0] || text,
+      explanation: text,
+      summary: lines.slice(1).join(" ").slice(0, 120),
+      creditsUsed: user.creditsUsed,
+      maxCredits: MAX_CREDITS,
+      resetAt: user.resetAt
+    })
+  };
 
 };
