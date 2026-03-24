@@ -10,6 +10,7 @@ directory = "netlify/functions"
   to = "/.netlify/functions/:splat"
   status = 200
 
+# IMPORTANT: keep this LAST
 [[redirects]]
   from = "/*"
   to = "/index.html"
