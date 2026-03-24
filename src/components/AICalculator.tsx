@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Bot, Loader2, Send, Sparkles, Zap, Clock } from "lucide-react";
+import { Bot, Loader2, Send, Zap, Clock } from "lucide-react";
 
 export function AICalculator() {
 
@@ -20,9 +20,11 @@ export function AICalculator() {
   const [resetAt, setResetAt] = useState<number | null>(null);
   const [timeRemaining, setTimeRemaining] = useState("");
 
-  // fetch credit status
+  // GET credits
   useEffect(() => {
+
     const fetchCredits = async () => {
+
       try {
 
         const res = await fetch("/.netlify/functions/ai");
@@ -34,15 +36,18 @@ export function AICalculator() {
         setCreditsUsed(data.creditsUsed || 0);
         setResetAt(data.resetAt || null);
 
-      } catch (err) {
+      } catch {
         console.log("credit fetch failed");
       }
+
     };
 
     fetchCredits();
+
   }, []);
 
-  // timer
+
+  // TIMER
   useEffect(() => {
 
     if (!resetAt) return;
@@ -72,7 +77,7 @@ export function AICalculator() {
   }, [resetAt]);
 
 
-
+  // SUBMIT
   const handleSubmit = async (e: React.FormEvent) => {
 
     e.preventDefault();
@@ -80,8 +85,7 @@ export function AICalculator() {
     if (!query.trim()) return;
 
     if (creditsUsed >= maxCredits) {
-
-      setError(`Daily limit reached. Try again in ${timeRemaining || "a few hours"}.`);
+      setError(`Daily limit reached. Try again in ${timeRemaining || "few hours"}`);
       return;
     }
 
@@ -111,11 +115,12 @@ export function AICalculator() {
         throw new Error(data.error || "AI request failed");
       }
 
+      // ✅ FIXED mapping
       setResponse({
-        finalAnswer: data.answer || "No result",
-        explanation: data.explanation || data.answer,
-        summary: data.summary || data.answer,
-        provider: data.source
+        finalAnswer: data.finalAnswer || "No result",
+        explanation: data.explanation || "",
+        summary: data.summary || "",
+        provider: data.provider || "AI"
       });
 
       setCreditsUsed(data.creditsUsed || creditsUsed + 1);
@@ -124,13 +129,12 @@ export function AICalculator() {
     } catch (err: any) {
 
       console.error(err);
-      setError("Network failure or API error. Please try again.");
+      setError(err.message || "Network failure or API error");
 
     }
 
     setLoading(false);
   };
-
 
 
   return (
@@ -140,73 +144,48 @@ export function AICalculator() {
       <div className="max-w-4xl mx-auto px-4">
 
         <div className="flex items-center gap-3 mb-8">
-
           <Bot size={28} />
-
-          <h1 className="text-3xl font-bold">
-            AI Text Calculator
-          </h1>
-
+          <h1 className="text-3xl font-bold">AI Text Calculator</h1>
         </div>
 
 
         <div className="bg-slate-800 rounded-2xl p-6">
-
 
           <div className="flex justify-between mb-4 flex-wrap gap-2">
 
             <span>Ask any math or financial question</span>
 
             <span className="flex items-center gap-2">
-
               <Zap size={16} />
-
               {maxCredits - creditsUsed} / {maxCredits}
-
             </span>
 
           </div>
 
 
           {creditsUsed >= maxCredits && timeRemaining && (
-
             <div className="text-yellow-400 text-sm mb-4 flex items-center gap-2">
-
               <Clock size={14} />
-
               Reset in {timeRemaining}
-
             </div>
-
           )}
 
 
           <form onSubmit={handleSubmit}>
 
             <textarea
-
               value={query}
-
               onChange={(e) => setQuery(e.target.value)}
-
               placeholder="Example: 2000 - 400"
-
               rows={3}
-
               className="w-full p-4 rounded-lg bg-slate-900 mb-4"
-
               disabled={loading}
-
             />
 
             <button
-
               type="submit"
-
               disabled={loading || !query.trim()}
-
               className="px-6 py-3 bg-indigo-600 rounded-lg flex items-center gap-2"
-
             >
 
               {loading ? (
@@ -222,15 +201,11 @@ export function AICalculator() {
           </form>
 
 
-
           {error && (
-
             <div className="mt-6 text-red-400">
               {error}
             </div>
-
           )}
-
 
 
           {response && (
@@ -238,44 +213,26 @@ export function AICalculator() {
             <div className="mt-8 space-y-4">
 
               <div className="p-4 bg-indigo-900 rounded-lg">
-
-                <div className="font-semibold mb-1">
-                  Result
-                </div>
-
-                <div className="text-xl">
-
-                  {response.finalAnswer}
-
-                </div>
-
+                <div className="font-semibold mb-1">Result</div>
+                <div className="text-xl">{response.finalAnswer}</div>
               </div>
-
 
               <div className="p-4 bg-slate-900 rounded-lg">
-
                 {response.explanation}
-
               </div>
 
-
               <div className="text-sm opacity-70">
-
                 AI Provider: {response.provider}
-
               </div>
 
             </div>
 
           )}
 
-
         </div>
 
       </div>
 
     </section>
-
   );
-
 }
