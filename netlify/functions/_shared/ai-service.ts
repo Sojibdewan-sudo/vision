@@ -1,5 +1,7 @@
 const MAX_CREDITS = 10;
 const WINDOW = 24 * 60 * 60 * 1000;
+const GROQ_MODELS = ["llama-3.1-8b-instant", "llama3-8b-8192", "llama-3.3-70b-versatile"];
+const GEMINI_MODELS = ["gemini-1.5-flash", "gemini-1.5-flash-latest", "gemini-1.5-flash-001"];
 
 type UsageEntry = {
   creditsUsed: number;
@@ -101,34 +103,41 @@ async function callGroq(prompt: string, systemPrompt: string) {
     throw new Error("Missing GROQ_API_KEY");
   }
 
-  const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${process.env.GROQ_API_KEY}`,
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-      model: "llama3-8b-8192",
-      messages: [
-        { role: "system", content: systemPrompt },
-        { role: "user", content: prompt }
-      ],
-      temperature: 0.2
-    })
-  });
+  const errors: string[] = [];
 
-  if (!response.ok) {
-    throw new Error(`Groq failed: ${await parseErrorText(response)}`);
+  for (const model of GROQ_MODELS) {
+    const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${process.env.GROQ_API_KEY}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        model,
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: prompt }
+        ],
+        temperature: 0.2
+      })
+    });
+
+    if (!response.ok) {
+      errors.push(`${model}: ${await parseErrorText(response)}`);
+      continue;
+    }
+
+    const data = await response.json();
+    const text = data?.choices?.[0]?.message?.content?.trim();
+
+    if (text) {
+      return { text, model };
+    }
+
+    errors.push(`${model}: empty response`);
   }
 
-  const data = await response.json();
-  const text = data?.choices?.[0]?.message?.content?.trim();
-
-  if (!text) {
-    throw new Error("Groq returned an empty response");
-  }
-
-  return text;
+  throw new Error(`Groq failed: ${errors.join(" | ")}`);
 }
 
 async function callGemini(prompt: string, systemPrompt: string) {
@@ -136,35 +145,42 @@ async function callGemini(prompt: string, systemPrompt: string) {
     throw new Error("Missing GEMINI_API_KEY");
   }
 
-  const response = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        contents: [
-          {
-            parts: [{ text: `${systemPrompt}\n\n${prompt}` }]
-          }
-        ]
-      })
+  const errors: string[] = [];
+
+  for (const model of GEMINI_MODELS) {
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${process.env.GEMINI_API_KEY}`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          contents: [
+            {
+              parts: [{ text: `${systemPrompt}\n\n${prompt}` }]
+            }
+          ]
+        })
+      }
+    );
+
+    if (!response.ok) {
+      errors.push(`${model}: ${await parseErrorText(response)}`);
+      continue;
     }
-  );
 
-  if (!response.ok) {
-    throw new Error(`Gemini failed: ${await parseErrorText(response)}`);
+    const data = await response.json();
+    const text = data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
+
+    if (text) {
+      return { text, model };
+    }
+
+    errors.push(`${model}: empty response`);
   }
 
-  const data = await response.json();
-  const text = data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
-
-  if (!text) {
-    throw new Error("Gemini returned an empty response");
-  }
-
-  return text;
+  throw new Error(`Gemini failed: ${errors.join(" | ")}`);
 }
 
 export async function handleAiRequest(input: RequestInput): Promise<ResponseOutput> {
@@ -225,20 +241,27 @@ export async function handleAiRequest(input: RequestInput): Promise<ResponseOutp
 
   const systemPrompt = buildSystemPrompt();
   let provider = "groq";
+  let providerModel = "";
   let text = "";
   let groqError = "";
 
   try {
-    text = await callGroq(prompt, systemPrompt);
+    const groqResult = await callGroq(prompt, systemPrompt);
+    text = groqResult.text;
+    providerModel = groqResult.model;
   } catch (error) {
     groqError = error instanceof Error ? error.message : "Unknown Groq error";
+    console.error("[AI] Groq failure:", groqError);
     provider = "gemini";
 
     try {
-      text = await callGemini(prompt, systemPrompt);
+      const geminiResult = await callGemini(prompt, systemPrompt);
+      text = geminiResult.text;
+      providerModel = geminiResult.model;
     } catch (geminiError) {
       const geminiMessage =
         geminiError instanceof Error ? geminiError.message : "Unknown Gemini error";
+      console.error("[AI] Gemini failure:", geminiMessage);
 
       return json(500, {
         error: "Both AI providers failed",
@@ -252,6 +275,7 @@ export async function handleAiRequest(input: RequestInput): Promise<ResponseOutp
   return json(200, {
     ok: true,
     provider,
+    providerModel,
     ...parseAiText(text),
     creditsUsed: user.creditsUsed,
     maxCredits: MAX_CREDITS,
