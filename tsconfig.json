@@ -23,5 +23,5 @@
     "allowImportingTsExtensions": true,
     "noEmit": true
   },
-  "exclude": ["server.ts", "public/netlify/functions/**/*.ts", "vite.config.ts"]
+  "exclude": ["server.ts", "netlify/functions/**/*.ts", "vite.config.ts"]
 }
