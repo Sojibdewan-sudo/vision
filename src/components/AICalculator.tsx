@@ -3,6 +3,40 @@ import { Bot, Loader2, Send, Sparkles, Zap, Clock } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { SEOBlock } from './SEOBlock';
 
+const AI_ENDPOINTS = ['/api/ai', '/.netlify/functions/ai'];
+
+async function fetchAiJson(path: string, init?: RequestInit) {
+  const res = await fetch(path, init);
+  const raw = await res.text();
+
+  let data: any = null;
+
+  try {
+    data = raw ? JSON.parse(raw) : null;
+  } catch {
+    if (!res.ok) {
+      throw new Error(`Request failed with status ${res.status}`);
+    }
+    throw new Error('Invalid API response from server.');
+  }
+
+  return { res, data };
+}
+
+async function requestAi(init?: RequestInit) {
+  let lastError: Error | null = null;
+
+  for (const path of AI_ENDPOINTS) {
+    try {
+      return await fetchAiJson(path, init);
+    } catch (error) {
+      lastError = error instanceof Error ? error : new Error('Unknown API error');
+    }
+  }
+
+  throw lastError || new Error('Network failure or API error. Please try again.');
+}
+
 export function AICalculator() {
   const [query, setQuery] = useState('');
   const [loading, setLoading] = useState(false);
@@ -22,9 +56,8 @@ export function AICalculator() {
     // Fetch initial credit status from backend
     const fetchCredits = async () => {
       try {
-        const res = await fetch('/api/ai');
+        const { res, data } = await requestAi();
         if (res.ok) {
-          const data = await res.json();
           setCreditsUsed(data.creditsUsed);
           setMaxCredits(data.maxCredits);
           setResetAt(data.resetAt);
@@ -79,15 +112,13 @@ export function AICalculator() {
     setResponse(null);
 
     try {
-      const res = await fetch('/api/ai', {
+      const { res, data } = await requestAi({
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ prompt: query }),
       });
-
-      const data = await res.json();
 
       if (!res.ok) {
         if (res.status === 429) {

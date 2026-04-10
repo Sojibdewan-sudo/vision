@@ -24,7 +24,11 @@ function json(statusCode: number, payload: unknown): ResponseOutput {
   return {
     statusCode,
     headers: {
-      "Content-Type": "application/json"
+      "Content-Type": "application/json; charset=utf-8",
+      "Cache-Control": "no-store",
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Headers": "Content-Type",
+      "Access-Control-Allow-Methods": "GET, POST, OPTIONS"
     },
     body: JSON.stringify(payload)
   };
@@ -47,13 +51,15 @@ function getHeader(
 
 function getClientIp(headers: Record<string, string | string[] | undefined>): string {
   const forwardedFor = getHeader(headers, "x-forwarded-for");
-  return forwardedFor.split(",")[0]?.trim() || "unknown";
+  const realIp = getHeader(headers, "x-nf-client-connection-ip");
+  return forwardedFor.split(",")[0]?.trim() || realIp || "unknown";
 }
 
 function buildSystemPrompt() {
   return [
     "You are a calculator AI for math and financial questions.",
-    'Return plain text in exactly this structure:',
+    "Answer accurately and keep the explanation concise.",
+    "Return plain text in exactly this structure:",
     "Line 1: final answer only",
     "Line 2+: short explanation",
     "Final line: simple summary"
@@ -69,13 +75,25 @@ function parseAiText(text: string) {
 
   const finalAnswer = lines[0] || trimmed || "No answer";
   const explanation =
-    lines.length > 1 ? lines.slice(1).join("\n") : trimmed || "No explanation provided.";
+    lines.length > 1 ? lines.slice(1, -1).join("\n") || lines.slice(1).join("\n") : trimmed;
   const summary =
     lines.length > 2
       ? lines[lines.length - 1]
-      : explanation.slice(0, 140) || "No summary provided.";
+      : (explanation || trimmed).slice(0, 140) || "No summary provided.";
 
-  return { finalAnswer, explanation, summary };
+  return {
+    finalAnswer,
+    explanation: explanation || "No explanation provided.",
+    summary
+  };
+}
+
+async function parseErrorText(response: Response) {
+  try {
+    return await response.text();
+  } catch {
+    return response.statusText || "Unknown provider error";
+  }
 }
 
 async function callGroq(prompt: string, systemPrompt: string) {
@@ -100,8 +118,7 @@ async function callGroq(prompt: string, systemPrompt: string) {
   });
 
   if (!response.ok) {
-    const details = await response.text();
-    throw new Error(`Groq failed: ${details || response.statusText}`);
+    throw new Error(`Groq failed: ${await parseErrorText(response)}`);
   }
 
   const data = await response.json();
@@ -137,8 +154,7 @@ async function callGemini(prompt: string, systemPrompt: string) {
   );
 
   if (!response.ok) {
-    const details = await response.text();
-    throw new Error(`Gemini failed: ${details || response.statusText}`);
+    throw new Error(`Gemini failed: ${await parseErrorText(response)}`);
   }
 
   const data = await response.json();
@@ -154,6 +170,11 @@ async function callGemini(prompt: string, systemPrompt: string) {
 export async function handleAiRequest(input: RequestInput): Promise<ResponseOutput> {
   const headers = input.headers || {};
   const method = (input.method || "GET").toUpperCase();
+
+  if (method === "OPTIONS") {
+    return json(200, { ok: true });
+  }
+
   const ip = getClientIp(headers);
   const now = Date.now();
 
@@ -168,6 +189,7 @@ export async function handleAiRequest(input: RequestInput): Promise<ResponseOutp
 
   if (method === "GET") {
     return json(200, {
+      ok: true,
       creditsUsed: user.creditsUsed,
       maxCredits: MAX_CREDITS,
       resetAt: user.resetAt
@@ -228,6 +250,7 @@ export async function handleAiRequest(input: RequestInput): Promise<ResponseOutp
   user.creditsUsed += 1;
 
   return json(200, {
+    ok: true,
     provider,
     ...parseAiText(text),
     creditsUsed: user.creditsUsed,

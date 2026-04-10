@@ -1,5 +1,5 @@
 import { Handler } from "@netlify/functions";
-import { handleAiRequest } from "../../lib/ai-service";
+import { handleAiRequest } from "./_shared/ai-service";
 
 export const handler: Handler = async (event) =>
   handleAiRequest({
