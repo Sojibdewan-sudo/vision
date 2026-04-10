@@ -5,8 +5,21 @@ import { SEOBlock } from './SEOBlock';
 
 const AI_ENDPOINTS = ['/api/ai', '/.netlify/functions/ai'];
 
+function buildEndpointUrl(path: string) {
+  if (typeof window === 'undefined') {
+    return path;
+  }
+
+  return new URL(path, window.location.origin).toString();
+}
+
 async function fetchAiJson(path: string, init?: RequestInit) {
-  const res = await fetch(path, init);
+  const target = buildEndpointUrl(path);
+  const res = await fetch(target, {
+    cache: 'no-store',
+    credentials: 'same-origin',
+    ...init,
+  });
   const raw = await res.text();
 
   let data: any = null;
@@ -15,26 +28,27 @@ async function fetchAiJson(path: string, init?: RequestInit) {
     data = raw ? JSON.parse(raw) : null;
   } catch {
     if (!res.ok) {
-      throw new Error(`Request failed with status ${res.status}`);
+      throw new Error(`${target} failed with status ${res.status}`);
     }
-    throw new Error('Invalid API response from server.');
+    throw new Error(`${target} returned invalid JSON.`);
   }
 
-  return { res, data };
+  return { res, data, target };
 }
 
 async function requestAi(init?: RequestInit) {
-  let lastError: Error | null = null;
+  const failures: string[] = [];
 
   for (const path of AI_ENDPOINTS) {
     try {
       return await fetchAiJson(path, init);
     } catch (error) {
-      lastError = error instanceof Error ? error : new Error('Unknown API error');
+      const message = error instanceof Error ? error.message : 'Unknown API error';
+      failures.push(message);
     }
   }
 
-  throw lastError || new Error('Network failure or API error. Please try again.');
+  throw new Error(failures.join(' | ') || 'Network failure or API error. Please try again.');
 }
 
 export function AICalculator() {
@@ -137,16 +151,20 @@ export function AICalculator() {
       setCreditsUsed(data.creditsUsed);
       setResetAt(data.resetAt);
 
-      // Log to Supabase
+      // Logging should never block the user from seeing a valid AI result.
       if (supabase) {
-        await supabase.from('ai_logs').insert([
-          {
-            query: query,
-            response: data,
-            user_ip: data.userIp || 'unknown',
-            created_at: new Date().toISOString(),
-          },
-        ]);
+        try {
+          await supabase.from('ai_logs').insert([
+            {
+              query: query,
+              response: data,
+              user_ip: data.userIp || 'unknown',
+              created_at: new Date().toISOString(),
+            },
+          ]);
+        } catch (logError) {
+          console.error('Supabase AI log insert failed:', logError);
+        }
       }
     } catch (err: any) {
       console.error('AI Error:', err);
