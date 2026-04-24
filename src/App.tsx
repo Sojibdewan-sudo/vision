@@ -11,7 +11,7 @@ import { updateSEO } from './lib/seo';
 const PercentageCalculator = React.lazy(() => import('./components/PercentageCalculator').then(m => ({ default: m.PercentageCalculator })));
 const UnitConverter = React.lazy(() => import('./components/UnitConverter').then(m => ({ default: m.UnitConverter })));
 const ScientificCalculator = React.lazy(() => import('./components/ScientificCalculator').then(m => ({ default: m.ScientificCalculator })));
-const AICalculator = React.lazy(() => import('./components/AICalculator').then(m => ({ default: m.AICalculator })));
+
 const AgeCalculator = React.lazy(() => import('./components/AgeCalculator').then(m => ({ default: m.AgeCalculator })));
 const LoanCalculator = React.lazy(() => import('./components/LoanCalculator').then(m => ({ default: m.LoanCalculator })));
 const InterestCalculator = React.lazy(() => import('./components/InterestCalculator').then(m => ({ default: m.InterestCalculator })));
@@ -28,7 +28,6 @@ export default function App() {
       '/percentage': 'percentage',
       '/converter': 'converter',
       '/scientific': 'scientific',
-      '/ai': 'ai',
       '/age': 'age',
       '/loan': 'loan',
       '/interest': 'interest',
@@ -73,7 +72,6 @@ export default function App() {
               <Route path="/percentage" element={<PercentageCalculator />} />
               <Route path="/converter" element={<UnitConverter />} />
               <Route path="/scientific" element={<ScientificCalculator />} />
-              <Route path="/ai" element={<AICalculator />} />
               <Route path="/age" element={<AgeCalculator />} />
               <Route path="/loan" element={<LoanCalculator />} />
               <Route path="/interest" element={<InterestCalculator />} />

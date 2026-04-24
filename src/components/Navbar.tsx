@@ -77,10 +77,10 @@ export function Navbar() {
             <div className="relative" ref={testDropdownRef}>
               <button
                 onClick={() => setIsTestDropdownOpen(!isTestDropdownOpen)}
-                className={`relative group flex items-center gap-1 text-sm font-medium transition-all duration-200 ease-in-out hover:scale-105 ${['/scientific', '/percentage', '/age', '/loan', '/interest', '/ai'].includes(activePage) ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-600 hover:text-indigo-600 dark:text-slate-300 dark:hover:text-indigo-400'}`}
+                className={`relative group flex items-center gap-1 text-sm font-medium transition-all duration-200 ease-in-out hover:scale-105 ${['/scientific', '/percentage', '/age', '/loan', '/interest'].includes(activePage) ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-600 hover:text-indigo-600 dark:text-slate-300 dark:hover:text-indigo-400'}`}
               >
                 Calculators <ChevronDown size={16} className={`transition-transform duration-200 ${isTestDropdownOpen ? 'rotate-180' : ''}`} />
-                <span className={`absolute -bottom-1 left-0 w-full h-0.5 bg-indigo-600 dark:bg-indigo-400 transform origin-left transition-transform duration-300 ease-out ${['/scientific', '/percentage', '/age', '/loan', '/interest', '/ai'].includes(activePage) ? 'scale-x-100' : 'scale-x-0 group-hover:scale-x-100'}`}></span>
+                <span className={`absolute -bottom-1 left-0 w-full h-0.5 bg-indigo-600 dark:bg-indigo-400 transform origin-left transition-transform duration-300 ease-out ${['/scientific', '/percentage', '/age', '/loan', '/interest'].includes(activePage) ? 'scale-x-100' : 'scale-x-0 group-hover:scale-x-100'}`}></span>
               </button>
               
               {isTestDropdownOpen && (
@@ -90,7 +90,6 @@ export function Navbar() {
                   <Link to="/age" onClick={closeMenus} className="block w-full text-left px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors duration-200">Age Calculator</Link>
                   <Link to="/loan" onClick={closeMenus} className="block w-full text-left px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors duration-200">Loan Calculator</Link>
                   <Link to="/interest" onClick={closeMenus} className="block w-full text-left px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors duration-200">Interest Calculator</Link>
-                  <Link to="/ai" onClick={closeMenus} className="block w-full text-left px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors duration-200">AI Text Calculator</Link>
                 </div>
               )}
             </div>
@@ -152,7 +151,6 @@ export function Navbar() {
           <div className="px-4 pt-2 pb-4 space-y-1">
             <MobileNavLink to="/" onClick={closeMenus} activePage={activePage}>Home</MobileNavLink>
             <MobileNavLink to="/scientific" onClick={closeMenus} activePage={activePage}>Scientific Calculator</MobileNavLink>
-            <MobileNavLink to="/ai" onClick={closeMenus} activePage={activePage}>AI Text Calculator</MobileNavLink>
             <MobileNavLink to="/converter" onClick={closeMenus} activePage={activePage}>Unit Converter</MobileNavLink>
             <MobileNavLink to="/word-counter" onClick={closeMenus} activePage={activePage}>Word Counter</MobileNavLink>
             

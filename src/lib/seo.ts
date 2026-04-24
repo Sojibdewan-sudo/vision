@@ -70,19 +70,6 @@ export const updateSEO = (page: string) => {
         ]
       )
     },
-    ai: {
-      title: "AI Text Calculator – Free Online Tool | Vision AI Tools",
-      description: "Ask math and financial questions in plain English. Our AI calculator provides step-by-step solutions instantly.",
-      schema: generateSchema(
-        "AI Text Calculator",
-        "Solve complex math and financial problems using plain English with our free AI Text Calculator.",
-        "/ai",
-        [
-          { q: "What kind of questions can I ask?", a: "You can ask anything from basic math to complex financial scenarios." },
-          { q: "Can it solve algebra or calculus?", a: "Yes, the AI is capable of solving algebraic equations and basic calculus problems, providing the steps along the way." }
-        ]
-      )
-    },
     age: {
       title: "Age Calculator – Free Online Tool | Vision AI Tools",
       description: "Instantly calculate your exact age from date of birth. Free and accurate age calculator tool.",

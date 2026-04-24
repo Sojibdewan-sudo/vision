@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Calculator, Cpu, Zap, Percent, Calendar, Landmark, Settings2, Type, FileText } from 'lucide-react';
+import { ArrowRight, Calculator, Zap, Percent, Calendar, Landmark, Settings2, Type, FileText } from 'lucide-react';
 
 export function Hero() {
   const tools = [
@@ -10,7 +10,6 @@ export function Hero() {
     { name: 'Age Calculator', desc: 'Calculate exact age in years, months, days', icon: Calendar, link: '/age' },
     { name: 'Loan Calculator', desc: 'Calculate EMI and interest breakdown', icon: Landmark, link: '/loan' },
     { name: 'Interest Calculator', desc: 'Calculate simple and compound interest', icon: Percent, link: '/interest' },
-    { name: 'AI Text Calculator', desc: 'Solve math problems with AI', icon: Cpu, link: '/ai' },
     { name: 'Typing Test', desc: 'Test your typing speed (English/Bangla)', icon: Type, link: '/typing-test' },
     { name: 'Word Counter', desc: 'Count words, characters, and sentences', icon: FileText, link: '/word-counter' },
   ];
@@ -33,7 +32,7 @@ export function Hero() {
           </h1>
           
           <p className="mx-auto mt-6 max-w-[600px] text-lg tracking-tight text-slate-600 dark:text-slate-300">
-            Convert units instantly, use advanced scientific calculator, and solve real-life problems with AI. Free online smart calculator tool.
+            Convert units instantly and use advanced scientific calculator. Free online smart calculator tool.
           </p>
           
           <div className="mt-10 flex flex-col sm:flex-row justify-center gap-4">
@@ -43,13 +42,6 @@ export function Hero() {
             >
               Start Calculating
               <ArrowRight className="ml-2 h-4 w-4" />
-            </Link>
-            <Link
-              to="/ai"
-              className="inline-flex items-center justify-center rounded-xl py-3 px-8 text-sm font-semibold bg-transparent text-slate-900 dark:text-white border border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all duration-200 ease-in-out"
-            >
-              Try AI Assistant
-              <Cpu className="ml-2 h-4 w-4 text-indigo-600 dark:text-indigo-400" />
             </Link>
           </div>
         </div>
