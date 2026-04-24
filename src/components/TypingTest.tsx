@@ -389,8 +389,7 @@ export function TypingTest({ initialLanguage = 'en' }: { initialLanguage?: 'en' 
             }
           ]}
           relatedTools={[
-            { name: "Word Counter", link: "/word-counter" },
-            { name: "AI Text Calculator", link: "/ai" }
+            { name: "Word Counter", link: "/word-counter" }
           ]}
         />
       </div>

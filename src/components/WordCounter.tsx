@@ -137,8 +137,7 @@ export function WordCounter() {
             }
           ]}
           relatedTools={[
-            { name: "Typing Test", link: "/typing" },
-            { name: "AI Text Calculator", link: "/ai" }
+            { name: "Typing Test", link: "/typing-test" }
           ]}
         />
       </div>

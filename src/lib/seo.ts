@@ -1,5 +1,5 @@
 export const updateSEO = (page: string) => {
-  const generateSchema = (name: string, description: string, url: string, faqs: {q: string, a: string}[]) => {
+  const generateSchema = (name: string, description: string, url: string, faqs: { q: string; a: string }[]) => {
     return {
       "@context": "https://schema.org",
       "@graph": [
@@ -13,7 +13,7 @@ export const updateSEO = (page: string) => {
         },
         {
           "@type": "FAQPage",
-          "mainEntity": faqs.map(faq => ({
+          "mainEntity": faqs.map((faq) => ({
             "@type": "Question",
             "name": faq.q,
             "acceptedAnswer": {
@@ -28,24 +28,24 @@ export const updateSEO = (page: string) => {
 
   const seoData: Record<string, { title: string; description: string; schema?: any }> = {
     home: {
-      title: "Vision AI Tools – Free Online Calculators & Converters",
-      description: "Convert units instantly, use advanced scientific calculator, and solve real-life problems with AI. Free online smart calculator tool.",
+      title: "Vision Tools - Free Online Calculators & Converters",
+      description: "Convert units instantly and use advanced calculator tools online for free, including scientific, percentage, age, loan, interest, typing, and word counter tools."
     },
     percentage: {
-      title: "Percentage Calculator – Free Online Tool | Vision AI Tools",
+      title: "Percentage Calculator - Free Online Tool | Vision Tools",
       description: "Calculate percentages instantly with our free Percentage Calculator. Find percentage increase, decrease, and percentage of numbers quickly online.",
       schema: generateSchema(
         "Percentage Calculator",
         "Calculate percentages instantly with our free Percentage Calculator.",
         "/percentage",
         [
-          { q: "How do I calculate percentage of a number?", a: "Divide the percentage by 100 and multiply it by the number. For example, to find 15% of 200: (15 / 100) × 200 = 30." },
-          { q: "How do I calculate a percentage increase?", a: "Use the 'Percentage Change' calculator. Enter the original value in the 'From' field and the new value in the 'to' field. The formula is ((New Value - Old Value) / Old Value) × 100." }
+          { q: "How do I calculate percentage of a number?", a: "Divide the percentage by 100 and multiply it by the number. For example, to find 15% of 200: (15 / 100) x 200 = 30." },
+          { q: "How do I calculate a percentage increase?", a: "Use the 'Percentage Change' calculator. Enter the original value in the 'From' field and the new value in the 'to' field. The formula is ((New Value - Old Value) / Old Value) x 100." }
         ]
       )
     },
     converter: {
-      title: "Unit Converter – Free Online Tool | Vision AI Tools",
+      title: "Unit Converter - Free Online Tool | Vision Tools",
       description: "Instantly convert between 100+ units across 13 categories including length, weight, temperature, and more.",
       schema: generateSchema(
         "Unit Converter",
@@ -58,7 +58,7 @@ export const updateSEO = (page: string) => {
       )
     },
     scientific: {
-      title: "Scientific Calculator – Free Online Tool | Vision AI Tools",
+      title: "Scientific Calculator - Free Online Tool | Vision Tools",
       description: "Free online scientific calculator with advanced mathematical functions, trigonometry, logarithms, and more.",
       schema: generateSchema(
         "Scientific Calculator",
@@ -66,12 +66,12 @@ export const updateSEO = (page: string) => {
         "/scientific",
         [
           { q: "Does it support trigonometric functions?", a: "Yes, it fully supports sine (sin), cosine (cos), and tangent (tan) functions." },
-          { q: "How do I calculate a square root?", a: "Press the √ button, enter the number, close the parenthesis, and hit calculate. For example: sqrt(16) = 4." }
+          { q: "How do I calculate a square root?", a: "Press the sqrt button, enter the number, close the parenthesis, and hit calculate. For example: sqrt(16) = 4." }
         ]
       )
     },
     age: {
-      title: "Age Calculator – Free Online Tool | Vision AI Tools",
+      title: "Age Calculator - Free Online Tool | Vision Tools",
       description: "Instantly calculate your exact age from date of birth. Free and accurate age calculator tool.",
       schema: generateSchema(
         "Age Calculator",
@@ -84,7 +84,7 @@ export const updateSEO = (page: string) => {
       )
     },
     loan: {
-      title: "Loan Calculator – Free Online Tool | Vision AI Tools",
+      title: "Loan Calculator - Free Online Tool | Vision Tools",
       description: "Calculate total payable amount, interest breakdown, and view amortization summary for your loan.",
       schema: generateSchema(
         "Loan Calculator",
@@ -97,7 +97,7 @@ export const updateSEO = (page: string) => {
       )
     },
     interest: {
-      title: "Interest Calculator – Free Online Tool | Vision AI Tools",
+      title: "Interest Calculator - Free Online Tool | Vision Tools",
       description: "Free online interest calculator. Calculate simple and compound interest instantly with visual breakdowns.",
       schema: generateSchema(
         "Interest Calculator",
@@ -110,7 +110,7 @@ export const updateSEO = (page: string) => {
       )
     },
     typing: {
-      title: "Typing Speed Test – Free Online Tool | Vision AI Tools",
+      title: "Typing Speed Test - Free Online Tool | Vision Tools",
       description: "Test your typing speed online in English and Bangla. Measure WPM, CPM, and accuracy with customizable time and difficulty levels.",
       schema: generateSchema(
         "Typing Speed Test",
@@ -122,8 +122,8 @@ export const updateSEO = (page: string) => {
         ]
       )
     },
-    'word-counter': {
-      title: "Word Counter – Free Online Tool | Vision AI Tools",
+    "word-counter": {
+      title: "Word Counter - Free Online Tool | Vision Tools",
       description: "Free online word counter tool to count words, characters, sentences, paragraphs and reading time instantly.",
       schema: generateSchema(
         "Word Counter",
@@ -136,78 +136,74 @@ export const updateSEO = (page: string) => {
       )
     },
     about: {
-      title: "About Us | Vision AI Tools",
-      description: "Learn more about Vision AI Tools, your all-in-one platform for precise calculations and intelligent problem-solving.",
+      title: "About Us | Vision Tools",
+      description: "Learn more about Vision Tools, your all-in-one platform for precise calculations and practical online tools."
     },
     terms: {
-      title: "Terms & Conditions | Vision AI Tools",
-      description: "Read the terms and conditions for using Vision AI Tools services.",
+      title: "Terms & Conditions | Vision Tools",
+      description: "Read the terms and conditions for using Vision Tools services."
     },
     privacy: {
-      title: "Privacy Policy | Vision AI Tools",
-      description: "Read our privacy policy to understand how we handle your data.",
+      title: "Privacy Policy | Vision Tools",
+      description: "Read our privacy policy to understand how we handle your data."
     }
   };
 
   const data = seoData[page] || seoData.home;
 
   document.title = data.title;
-  
+
   const metaDescription = document.querySelector('meta[name="description"]');
-  if (metaDescription) metaDescription.setAttribute('content', data.description);
+  if (metaDescription) metaDescription.setAttribute("content", data.description);
 
   const ogTitle = document.querySelector('meta[property="og:title"]');
-  if (ogTitle) ogTitle.setAttribute('content', data.title);
+  if (ogTitle) ogTitle.setAttribute("content", data.title);
 
   const ogDesc = document.querySelector('meta[property="og:description"]');
-  if (ogDesc) ogDesc.setAttribute('content', data.description);
+  if (ogDesc) ogDesc.setAttribute("content", data.description);
 
   const twitterTitle = document.querySelector('meta[property="twitter:title"]');
-  if (twitterTitle) twitterTitle.setAttribute('content', data.title);
+  if (twitterTitle) twitterTitle.setAttribute("content", data.title);
 
   const twitterDesc = document.querySelector('meta[property="twitter:description"]');
-  if (twitterDesc) twitterDesc.setAttribute('content', data.description);
+  if (twitterDesc) twitterDesc.setAttribute("content", data.description);
 
-  // Update Canonical URL
   let canonicalLink = document.querySelector('link[rel="canonical"]');
   if (!canonicalLink) {
-    canonicalLink = document.createElement('link');
-    canonicalLink.setAttribute('rel', 'canonical');
+    canonicalLink = document.createElement("link");
+    canonicalLink.setAttribute("rel", "canonical");
     document.head.appendChild(canonicalLink);
   }
-  
-  // Map page to path
-  const pathMap: Record<string, string> = {
-    home: '/',
-    percentage: '/percentage',
-    converter: '/converter',
-    scientific: '/scientific',
-    ai: '/ai',
-    age: '/age',
-    loan: '/loan',
-    interest: '/interest',
-    typing: '/typing-test',
-    'word-counter': '/word-counter',
-    about: '/about',
-    terms: '/terms',
-    privacy: '/privacy'
-  };
-  
-  const currentPath = pathMap[page] || '/';
-  canonicalLink.setAttribute('href', `https://vision.aivoro.site${currentPath}`);
 
-  // Update Schema
-  let schemaScript = document.getElementById('dynamic-schema') as HTMLScriptElement;
+  const pathMap: Record<string, string> = {
+    home: "/",
+    percentage: "/percentage",
+    converter: "/converter",
+    scientific: "/scientific",
+    age: "/age",
+    loan: "/loan",
+    interest: "/interest",
+    typing: "/typing-test",
+    "word-counter": "/word-counter",
+    about: "/about",
+    terms: "/terms",
+    privacy: "/privacy"
+  };
+
+  const currentPath = pathMap[page] || "/";
+  canonicalLink.setAttribute("href", `https://vision.aivoro.site${currentPath}`);
+
+  let schemaScript = document.getElementById("dynamic-schema") as HTMLScriptElement | null;
   if (!schemaScript) {
-    schemaScript = document.createElement('script');
-    schemaScript.id = 'dynamic-schema';
-    schemaScript.type = 'application/ld+json';
+    schemaScript = document.createElement("script");
+    schemaScript.id = "dynamic-schema";
+    schemaScript.type = "application/ld+json";
     document.head.appendChild(schemaScript);
   }
-  
+
   if (data.schema) {
     schemaScript.textContent = JSON.stringify(data.schema);
   } else {
-    schemaScript.textContent = '';
+    schemaScript.textContent = "";
   }
 };

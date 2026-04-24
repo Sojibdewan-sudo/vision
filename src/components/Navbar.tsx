@@ -65,7 +65,7 @@ export function Navbar() {
               <Calculator size={24} />
             </div>
             <span className="font-bold text-xl tracking-tight text-slate-900 dark:text-white transition-colors duration-300 group-hover:text-indigo-600 dark:group-hover:text-indigo-400">
-              Vision <span className="text-indigo-600 dark:text-indigo-400">AI</span> Tools
+              Vision Tools
             </span>
           </Link>
 
@@ -196,6 +196,5 @@ function MobileNavLink({ to, onClick, children, activePage }: { to: string, onCl
     </Link>
   );
 }
-
 
 

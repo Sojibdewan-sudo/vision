@@ -11,7 +11,7 @@ export function Footer() {
             <Calculator size={20} />
           </div>
           <span className="font-bold text-lg tracking-tight text-white">
-            Vision <span className="text-indigo-400">AI</span> Tools
+            Vision Tools
           </span>
         </Link>
         
@@ -31,11 +31,9 @@ export function Footer() {
         </div>
         
         <p className="text-sm text-slate-500">
-          &copy; {new Date().getFullYear()} Vision AI Tools. All rights reserved.
+          &copy; {new Date().getFullYear()} Vision Tools. All rights reserved.
         </p>
       </div>
     </footer>
   );
 }
-
-

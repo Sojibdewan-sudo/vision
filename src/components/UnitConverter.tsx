@@ -331,8 +331,7 @@ export function UnitConverter() {
           ]}
           relatedTools={[
             { name: "Scientific Calculator", link: "/scientific" },
-            { name: "Percentage Calculator", link: "/percentage" },
-            { name: "AI Text Calculator", link: "/ai" }
+            { name: "Percentage Calculator", link: "/percentage" }
           ]}
         />
       </div>

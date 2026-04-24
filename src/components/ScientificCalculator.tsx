@@ -333,8 +333,7 @@ export function ScientificCalculator() {
           ]}
           relatedTools={[
             { name: "Percentage Calculator", link: "/percentage" },
-            { name: "Unit Converter", link: "/converter" },
-            { name: "AI Text Calculator", link: "/ai" }
+            { name: "Unit Converter", link: "/converter" }
           ]}
         />
       </div>
