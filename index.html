@@ -4,83 +4,69 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <title>Vision Tools - Free Online Calculators, Converters & Utility Tools</title>
-  <meta
-    name="description"
-    content="Use Vision Tools for free online calculations and utilities. Includes unit converter, percentage calculator, scientific calculator, typing test, word counter, and more."
-  />
-  <meta
-    name="keywords"
-    content="calculator, unit converter, percentage calculator, scientific calculator, typing test, word counter, online tools, free calculator, Bangladesh calculator"
-  />
+  <!-- PRIMARY SEO -->
+  <title>Vision AI Tools – Free Online Calculators & Smart Tools</title>
+  <meta name="description" content="Free online calculators, converters, and AI tools. Solve math problems, convert units, and boost productivity instantly." />
   <meta name="robots" content="index, follow" />
-
   <link rel="canonical" href="https://vision.aivoro.site/" />
-  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-  <link rel="apple-touch-icon" href="/logo.png" />
 
+  <!-- FAVICON -->
+  <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+  <link rel="apple-touch-icon" href="/favicon.ico" />
+
+  <!-- GOOGLE VERIFICATION -->
   <meta name="google-site-verification" content="PASTE_YOUR_GOOGLE_CODE_HERE" />
 
+  <!-- OPEN GRAPH -->
   <meta property="og:type" content="website" />
-  <meta property="og:title" content="Vision Tools - Free Calculator & Utility Tools" />
-  <meta
-    property="og:description"
-    content="Use free online calculators, converters, typing test, and word counter tools with Vision Tools."
-  />
+  <meta property="og:title" content="Vision AI Tools – Free Online Calculators & Smart Tools" />
+  <meta property="og:description" content="Use free calculators, converters, and AI tools for daily tasks and productivity." />
   <meta property="og:url" content="https://vision.aivoro.site/" />
 
+  <!-- TWITTER -->
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="Vision Tools" />
-  <meta
-    name="twitter:description"
-    content="Free online calculator, converter, typing, and writing tools."
-  />
+  <meta name="twitter:title" content="Vision AI Tools" />
+  <meta name="twitter:description" content="Free online calculators, converters, and AI-powered tools." />
 
+  <!-- GOOGLE ANALYTICS -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
   <script>
     window.dataLayer = window.dataLayer || [];
-    function gtag() { dataLayer.push(arguments); }
+    function gtag(){dataLayer.push(arguments);}
     gtag('js', new Date());
     gtag('config', 'G-XXXXXXXXXX');
   </script>
 
-  <script src="https://www.google.com/recaptcha/api.js?render=YOUR_SITE_KEY"></script>
+  <!-- reCAPTCHA (optional - backend use only) -->
+  <!-- <script src="https://www.google.com/recaptcha/api.js?render=YOUR_SITE_KEY"></script> -->
 
+  <!-- BASIC STRUCTURED DATA (ONLY ONE – NO DUPLICATE) -->
   <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "WebApplication",
-      "name": "Vision Tools",
-      "url": "https://vision.aivoro.site/",
-      "description": "Free calculator and utility tools with unit conversion and everyday productivity features",
-      "applicationCategory": "UtilityApplication",
-      "operatingSystem": "All"
-    }
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "Vision AI Tools",
+    "url": "https://vision.aivoro.site"
+  }
   </script>
 
-  <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "FAQPage",
-      "mainEntity": [{
-        "@type": "Question",
-        "name": "What is Vision Tools?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "Vision Tools is a free online platform with calculators, converters, typing tests, and writing utilities."
-        }
-      }]
-    }
-  </script>
-
+  <!-- THEME -->
   <script>
-    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+    if (
+      localStorage.theme === 'dark' ||
+      (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)
+    ) {
       document.documentElement.classList.add('dark');
     }
   </script>
+
 </head>
+
 <body class="bg-slate-50 text-slate-900 dark:bg-slate-900 dark:text-slate-100 transition-colors duration-200">
+
   <div id="root"></div>
+
   <script type="module" src="/src/main.tsx"></script>
+
 </body>
 </html>
