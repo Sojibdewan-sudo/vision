@@ -1,209 +1,190 @@
+import { getToolContent } from './toolContent';
+
+const BASE_URL = 'https://vision.aivoro.site';
+
+interface SEOPage {
+  title: string;
+  description: string;
+  path: string;
+  appCategory?: string;
+}
+
+const pageMeta: Record<string, SEOPage> = {
+  home: {
+    title: 'Vision Tools - Free Online Calculators, Converters, and Productivity Tools',
+    description:
+      'Use free online calculators, converters, typing tools, and productivity utilities with clean UI, strong SEO content, and fast results.',
+    path: '/',
+  },
+  percentage: {
+    title: 'Percentage Calculator Online - Increase, Decrease, and Reverse Percentage',
+    description:
+      'Use our percentage calculator online to calculate percentage increase, decrease, percent of a number, and reverse percentage values instantly.',
+    path: '/percentage',
+    appCategory: 'FinanceApplication',
+  },
+  converter: {
+    title: 'Unit Converter Online - Length, Weight, Temperature, Speed, and More',
+    description:
+      'Convert units instantly with our unit converter online for length, weight, temperature, pressure, area, speed, storage, and more.',
+    path: '/converter',
+    appCategory: 'UtilitiesApplication',
+  },
+  scientific: {
+    title: 'Scientific Calculator Online - Advanced Math, Logs, Roots, and Trigonometry',
+    description:
+      'Use our scientific calculator online for trigonometry, powers, roots, logs, constants, and advanced math calculations.',
+    path: '/scientific',
+    appCategory: 'EducationalApplication',
+  },
+  age: {
+    title: 'Age Calculator Online - Exact Age in Years, Months, Days',
+    description:
+      'Calculate exact age from date of birth online with years, months, days, total days lived, and next birthday countdown.',
+    path: '/age',
+    appCategory: 'UtilitiesApplication',
+  },
+  loan: {
+    title: 'Loan Calculator Online - EMI, Interest, and Total Repayment',
+    description:
+      'Use our loan calculator online to estimate EMI, total interest, and full repayment for home, car, or personal loans.',
+    path: '/loan',
+    appCategory: 'FinanceApplication',
+  },
+  interest: {
+    title: 'Interest Calculator Online - Simple and Compound Interest',
+    description:
+      'Calculate simple and compound interest online with maturity amount, interest earned, and compounding frequency options.',
+    path: '/interest',
+    appCategory: 'FinanceApplication',
+  },
+  typing: {
+    title: 'Typing Speed Test Online - Check WPM, CPM, and Accuracy',
+    description:
+      'Take a typing speed test online in English or Bangla and measure WPM, CPM, accuracy, and mistakes in real time.',
+    path: '/typing-test',
+    appCategory: 'EducationalApplication',
+  },
+  'word-counter': {
+    title: 'Word Counter Online - Count Words, Characters, Sentences, and Reading Time',
+    description:
+      'Count words, characters, sentences, paragraphs, and reading time instantly with our free online word counter.',
+    path: '/word-counter',
+    appCategory: 'UtilitiesApplication',
+  },
+  about: {
+    title: 'About Vision Tools',
+    description: 'Learn more about Vision Tools and our collection of free online calculators and productivity tools.',
+    path: '/about',
+  },
+  terms: {
+    title: 'Terms and Conditions - Vision Tools',
+    description: 'Read the terms and conditions for using Vision Tools.',
+    path: '/terms',
+  },
+  privacy: {
+    title: 'Privacy Policy - Vision Tools',
+    description: 'Read the privacy policy for Vision Tools.',
+    path: '/privacy',
+  },
+};
+
+const setMetaByName = (name: string, content: string) => {
+  let tag = document.querySelector(`meta[name="${name}"]`);
+  if (!tag) {
+    tag = document.createElement('meta');
+    tag.setAttribute('name', name);
+    document.head.appendChild(tag);
+  }
+  tag.setAttribute('content', content);
+};
+
+const setMetaByProperty = (property: string, content: string) => {
+  let tag = document.querySelector(`meta[property="${property}"]`);
+  if (!tag) {
+    tag = document.createElement('meta');
+    tag.setAttribute('property', property);
+    document.head.appendChild(tag);
+  }
+  tag.setAttribute('content', content);
+};
+
 export const updateSEO = (page: string) => {
-  const generateSchema = (name: string, description: string, url: string, faqs: { q: string; a: string }[]) => {
-    return {
-      "@context": "https://schema.org",
-      "@graph": [
-        {
-          "@type": "WebApplication",
-          "name": name,
-          "description": description,
-          "applicationCategory": "CalculatorApplication",
-          "operatingSystem": "All",
-          "url": `https://vision.aivoro.site${url}`
-        },
-        {
-          "@type": "FAQPage",
-          "mainEntity": faqs.map((faq) => ({
-            "@type": "Question",
-            "name": faq.q,
-            "acceptedAnswer": {
-              "@type": "Answer",
-              "text": faq.a
-            }
-          }))
-        }
-      ]
-    };
-  };
-
-  const seoData: Record<string, { title: string; description: string; schema?: any }> = {
-    home: {
-      title: "Vision Tools - Free Online Calculators & Converters",
-      description: "Convert units instantly and use advanced calculator tools online for free, including scientific, percentage, age, loan, interest, typing, and word counter tools."
-    },
-    percentage: {
-      title: "Percentage Calculator - Free Online Tool | Vision Tools",
-      description: "Calculate percentages instantly with our free Percentage Calculator. Find percentage increase, decrease, and percentage of numbers quickly online.",
-      schema: generateSchema(
-        "Percentage Calculator",
-        "Calculate percentages instantly with our free Percentage Calculator.",
-        "/percentage",
-        [
-          { q: "How do I calculate percentage of a number?", a: "Divide the percentage by 100 and multiply it by the number. For example, to find 15% of 200: (15 / 100) x 200 = 30." },
-          { q: "How do I calculate a percentage increase?", a: "Use the 'Percentage Change' calculator. Enter the original value in the 'From' field and the new value in the 'to' field. The formula is ((New Value - Old Value) / Old Value) x 100." }
-        ]
-      )
-    },
-    converter: {
-      title: "Unit Converter - Free Online Tool | Vision Tools",
-      description: "Instantly convert between 100+ units across 13 categories including length, weight, temperature, and more.",
-      schema: generateSchema(
-        "Unit Converter",
-        "Instantly convert between hundreds of units of measurement with our free online Unit Converter.",
-        "/converter",
-        [
-          { q: "Which units are supported?", a: "We currently support conversions for Length, Area, Volume, Mass, Time, Temperature, Speed, Pressure, Energy, Power, Voltage, Density, and Data Storage." },
-          { q: "Can I convert metric to imperial units?", a: "Absolutely. The tool seamlessly converts between metric and imperial systems across all supported categories." }
-        ]
-      )
-    },
-    scientific: {
-      title: "Scientific Calculator - Free Online Tool | Vision Tools",
-      description: "Free online scientific calculator with advanced mathematical functions, trigonometry, logarithms, and more.",
-      schema: generateSchema(
-        "Scientific Calculator",
-        "Solve complex mathematical problems instantly with our free online Scientific Calculator.",
-        "/scientific",
-        [
-          { q: "Does it support trigonometric functions?", a: "Yes, it fully supports sine (sin), cosine (cos), and tangent (tan) functions." },
-          { q: "How do I calculate a square root?", a: "Press the sqrt button, enter the number, close the parenthesis, and hit calculate. For example: sqrt(16) = 4." }
-        ]
-      )
-    },
-    age: {
-      title: "Age Calculator - Free Online Tool | Vision Tools",
-      description: "Instantly calculate your exact age from date of birth. Free and accurate age calculator tool.",
-      schema: generateSchema(
-        "Age Calculator",
-        "Instantly calculate your exact age in years, months, and days with our free online Age Calculator.",
-        "/age",
-        [
-          { q: "How is my exact age calculated?", a: "The calculator determines the difference between your date of birth and the current date, accounting for leap years and varying month lengths." },
-          { q: "Can I calculate my age on a future date?", a: "Yes, simply change the Current Date field to any future date." }
-        ]
-      )
-    },
-    loan: {
-      title: "Loan Calculator - Free Online Tool | Vision Tools",
-      description: "Calculate total payable amount, interest breakdown, and view amortization summary for your loan.",
-      schema: generateSchema(
-        "Loan Calculator",
-        "Calculate your Equated Monthly Installment (EMI), total interest payable, and the overall cost of your loan.",
-        "/loan",
-        [
-          { q: "Why is the total interest so high?", a: "In the early years of a loan, a larger portion of your EMI goes towards paying off the interest rather than the principal." },
-          { q: "How can I reduce my total interest?", a: "You can reduce your total interest by choosing a shorter loan tenure, negotiating a lower interest rate, or making prepayments." }
-        ]
-      )
-    },
-    interest: {
-      title: "Interest Calculator - Free Online Tool | Vision Tools",
-      description: "Free online interest calculator. Calculate simple and compound interest instantly with visual breakdowns.",
-      schema: generateSchema(
-        "Interest Calculator",
-        "Calculate simple and compound interest easily with our free online Interest Calculator.",
-        "/interest",
-        [
-          { q: "What is the difference between simple and compound interest?", a: "Simple interest is calculated only on the principal amount. Compound interest is calculated on the principal amount and also on the accumulated interest of previous periods." },
-          { q: "How does compounding frequency affect the total interest?", a: "The more frequently interest is compounded, the higher the total interest earned or paid will be." }
-        ]
-      )
-    },
-    typing: {
-      title: "Typing Speed Test - Free Online Tool | Vision Tools",
-      description: "Test your typing speed online in English and Bangla. Measure WPM, CPM, and accuracy with customizable time and difficulty levels.",
-      schema: generateSchema(
-        "Typing Speed Test",
-        "Test your typing speed online in English and Bangla. Measure WPM, CPM, and accuracy.",
-        "/typing-test",
-        [
-          { q: "How is WPM calculated?", a: "WPM (Words Per Minute) is calculated by dividing the total number of correctly typed characters by 5 and then dividing by the time elapsed in minutes." },
-          { q: "What is considered a good typing speed?", a: "An average typing speed is around 40 WPM. Speeds above 60 WPM are considered good." }
-        ]
-      )
-    },
-    "word-counter": {
-      title: "Word Counter - Free Online Tool | Vision Tools",
-      description: "Free online word counter tool to count words, characters, sentences, paragraphs and reading time instantly.",
-      schema: generateSchema(
-        "Word Counter",
-        "Count words, characters, sentences, and paragraphs instantly with our free online Word Counter.",
-        "/word-counter",
-        [
-          { q: "Does it count spaces as characters?", a: "Yes, the standard 'Characters' metric includes spaces. However, we also provide a 'Characters (No Spaces)' metric." },
-          { q: "How is reading time calculated?", a: "Reading time is estimated based on an average reading speed of 200 words per minute." }
-        ]
-      )
-    },
-    about: {
-      title: "About Us | Vision Tools",
-      description: "Learn more about Vision Tools, your all-in-one platform for precise calculations and practical online tools."
-    },
-    terms: {
-      title: "Terms & Conditions | Vision Tools",
-      description: "Read the terms and conditions for using Vision Tools services."
-    },
-    privacy: {
-      title: "Privacy Policy | Vision Tools",
-      description: "Read our privacy policy to understand how we handle your data."
-    }
-  };
-
-  const data = seoData[page] || seoData.home;
+  const data = pageMeta[page] || pageMeta.home;
+  const tool = getToolContent(page);
 
   document.title = data.title;
 
-  const metaDescription = document.querySelector('meta[name="description"]');
-  if (metaDescription) metaDescription.setAttribute("content", data.description);
+  setMetaByName('description', data.description);
+  setMetaByName('robots', 'index, follow');
+  setMetaByProperty('og:title', data.title);
+  setMetaByProperty('og:description', data.description);
+  setMetaByProperty('og:type', 'website');
+  setMetaByProperty('og:url', `${BASE_URL}${data.path}`);
+  setMetaByName('twitter:card', 'summary_large_image');
+  setMetaByName('twitter:title', data.title);
+  setMetaByName('twitter:description', data.description);
 
-  const ogTitle = document.querySelector('meta[property="og:title"]');
-  if (ogTitle) ogTitle.setAttribute("content", data.title);
+  let canonical = document.querySelector('link[rel="canonical"]');
+  if (!canonical) {
+    canonical = document.createElement('link');
+    canonical.setAttribute('rel', 'canonical');
+    document.head.appendChild(canonical);
+  }
+  canonical.setAttribute('href', `${BASE_URL}${data.path}`);
 
-  const ogDesc = document.querySelector('meta[property="og:description"]');
-  if (ogDesc) ogDesc.setAttribute("content", data.description);
+  const oldSchema = document.getElementById('dynamic-schema');
+  if (oldSchema) oldSchema.remove();
 
-  const twitterTitle = document.querySelector('meta[property="twitter:title"]');
-  if (twitterTitle) twitterTitle.setAttribute("content", data.title);
+  const graph: Record<string, unknown>[] = [
+    {
+      '@context': 'https://schema.org',
+      '@type': 'WebSite',
+      name: 'Vision Tools',
+      url: BASE_URL,
+    },
+    {
+      '@context': 'https://schema.org',
+      '@type': 'WebPage',
+      name: data.title,
+      description: data.description,
+      url: `${BASE_URL}${data.path}`,
+    },
+  ];
 
-  const twitterDesc = document.querySelector('meta[property="twitter:description"]');
-  if (twitterDesc) twitterDesc.setAttribute("content", data.description);
+  if (tool) {
+    graph.push({
+      '@context': 'https://schema.org',
+      '@type': 'SoftwareApplication',
+      name: tool.title,
+      applicationCategory: data.appCategory || 'UtilitiesApplication',
+      operatingSystem: 'All',
+      offers: {
+        '@type': 'Offer',
+        price: '0',
+        priceCurrency: 'USD',
+      },
+      description: tool.shortAnswer,
+      url: `${BASE_URL}${tool.slug}`,
+    });
 
-  let canonicalLink = document.querySelector('link[rel="canonical"]');
-  if (!canonicalLink) {
-    canonicalLink = document.createElement("link");
-    canonicalLink.setAttribute("rel", "canonical");
-    document.head.appendChild(canonicalLink);
+    graph.push({
+      '@context': 'https://schema.org',
+      '@type': 'FAQPage',
+      mainEntity: tool.faq.map((item) => ({
+        '@type': 'Question',
+        name: item.question,
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: item.answer,
+        },
+      })),
+    });
   }
 
-  const pathMap: Record<string, string> = {
-    home: "/",
-    percentage: "/percentage",
-    converter: "/converter",
-    scientific: "/scientific",
-    age: "/age",
-    loan: "/loan",
-    interest: "/interest",
-    typing: "/typing-test",
-    "word-counter": "/word-counter",
-    about: "/about",
-    terms: "/terms",
-    privacy: "/privacy"
-  };
-
-  const currentPath = pathMap[page] || "/";
-  canonicalLink.setAttribute("href", `https://vision.aivoro.site${currentPath}`);
-
-  let schemaScript = document.getElementById("dynamic-schema") as HTMLScriptElement | null;
-  if (!schemaScript) {
-    schemaScript = document.createElement("script");
-    schemaScript.id = "dynamic-schema";
-    schemaScript.type = "application/ld+json";
-    document.head.appendChild(schemaScript);
-  }
-
-  if (data.schema) {
-    schemaScript.textContent = JSON.stringify(data.schema);
-  } else {
-    schemaScript.textContent = "";
-  }
+  const script = document.createElement('script');
+  script.id = 'dynamic-schema';
+  script.type = 'application/ld+json';
+  script.textContent = JSON.stringify(graph);
+  document.head.appendChild(script);
 };

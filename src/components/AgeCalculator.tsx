@@ -1,11 +1,21 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Calendar } from 'lucide-react';
 import { SEOBlock } from './SEOBlock';
+import { CopyResultButton } from './CopyResultButton';
+import { getToolContent } from '../lib/toolContent';
 
 export function AgeCalculator() {
   const [dob, setDob] = useState('');
   const [currentDate, setCurrentDate] = useState(new Date().toISOString().split('T')[0]);
-  const [result, setResult] = useState<{ years: number; months: number; days: number; totalDays: number; nextBirthdayDays: number } | null>(null);
+  const [result, setResult] = useState<{
+    years: number;
+    months: number;
+    days: number;
+    totalDays: number;
+    nextBirthdayDays: number;
+  } | null>(null);
+
+  const content = getToolContent('age');
 
   useEffect(() => {
     if (dob && currentDate) {
@@ -37,133 +47,107 @@ export function AgeCalculator() {
       months += 12;
     }
 
-    const diffTime = Math.abs(targetDate.getTime() - birthDate.getTime());
-    const totalDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-
-    // Next birthday
+    const totalDays = Math.floor((targetDate.getTime() - birthDate.getTime()) / (1000 * 60 * 60 * 24));
     const nextBirthday = new Date(birthDate);
     nextBirthday.setFullYear(targetDate.getFullYear());
     if (nextBirthday < targetDate) {
       nextBirthday.setFullYear(targetDate.getFullYear() + 1);
     }
-    const nextBirthdayDiff = Math.ceil((nextBirthday.getTime() - targetDate.getTime()) / (1000 * 60 * 60 * 24));
+    const nextBirthdayDays = Math.ceil((nextBirthday.getTime() - targetDate.getTime()) / (1000 * 60 * 60 * 24));
 
-    setResult({ years, months, days, totalDays, nextBirthdayDays: nextBirthdayDiff });
+    setResult({ years, months, days, totalDays, nextBirthdayDays });
   };
 
   return (
     <section id="age" className="py-16 transition-colors duration-300">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="p-2 bg-indigo-100 dark:bg-indigo-900/50 rounded-lg text-indigo-600 dark:text-indigo-400">
+      <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
+        <div className="mb-4 flex items-center gap-3">
+          <div className="rounded-2xl bg-indigo-100 p-2 text-indigo-600 dark:bg-indigo-900/50 dark:text-indigo-400">
             <Calendar size={28} />
           </div>
-          <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Age Calculator</h1>
+          <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">Age Calculator</h1>
         </div>
-        
-        <p className="text-lg text-slate-600 dark:text-slate-300 mb-8 max-w-3xl">
-          Instantly calculate your exact age in years, months, and days with our free online Age Calculator. Find out how many total days you've lived and get a countdown to your next birthday. Perfect for filling out official forms or just satisfying your curiosity.
+
+        <p className="mb-8 max-w-3xl text-lg leading-8 text-slate-600 dark:text-slate-300">
+          Use this age calculator online to find exact age from date of birth, total days lived, and days left until the next birthday for forms, eligibility checks, and quick profile updates.
         </p>
 
-        <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm hover:shadow-md border border-slate-200 dark:border-slate-700 p-6 sm:p-8 transition-all duration-200">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-            <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Date of Birth</label>
+        <div className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-800 sm:p-8">
+          <div className="mb-8 grid grid-cols-1 gap-6 md:grid-cols-2">
+            <Field label="Date of Birth">
               <input
                 type="date"
                 value={dob}
                 onChange={(e) => setDob(e.target.value)}
-                className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all outline-none"
+                className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 dark:border-slate-700 dark:bg-slate-900 dark:text-white"
               />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Current Date</label>
+            </Field>
+            <Field label="Current Date">
               <input
                 type="date"
                 value={currentDate}
                 onChange={(e) => setCurrentDate(e.target.value)}
-                className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all outline-none"
+                className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 dark:border-slate-700 dark:bg-slate-900 dark:text-white"
               />
-            </div>
+            </Field>
           </div>
 
           {result && (
-            <div className="bg-indigo-50 dark:bg-indigo-900/20 rounded-2xl p-6 border border-indigo-100 dark:border-indigo-800/50 animate-in zoom-in duration-300">
-              <h2 className="text-xl font-semibold text-slate-900 dark:text-white mb-4 text-center">Your Exact Age</h2>
-              <div className="grid grid-cols-3 gap-4 text-center mb-6">
-                <div className="bg-white dark:bg-slate-800 p-4 rounded-xl shadow-sm hover:-translate-y-1 transition-transform">
-                  <div className="text-3xl font-bold text-indigo-600 dark:text-indigo-400">{result.years}</div>
-                  <div className="text-sm font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider mt-1">Years</div>
+            <div className="rounded-[1.75rem] border border-indigo-100 bg-gradient-to-br from-indigo-50 via-white to-slate-50 p-6 dark:border-indigo-800/50 dark:from-indigo-900/20 dark:via-slate-800 dark:to-slate-800">
+              <div className="mb-6 flex flex-col items-center justify-between gap-4 border-b border-slate-200 pb-6 text-center dark:border-slate-700 md:flex-row md:text-left">
+                <div>
+                  <h2 className="text-xl font-semibold text-slate-900 dark:text-white">Exact Age</h2>
+                  <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Years, months, days, and birthday countdown.</p>
                 </div>
-                <div className="bg-white dark:bg-slate-800 p-4 rounded-xl shadow-sm hover:-translate-y-1 transition-transform">
-                  <div className="text-3xl font-bold text-indigo-600 dark:text-indigo-400">{result.months}</div>
-                  <div className="text-sm font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider mt-1">Months</div>
-                </div>
-                <div className="bg-white dark:bg-slate-800 p-4 rounded-xl shadow-sm hover:-translate-y-1 transition-transform">
-                  <div className="text-3xl font-bold text-indigo-600 dark:text-indigo-400">{result.days}</div>
-                  <div className="text-sm font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider mt-1">Days</div>
-                </div>
+                <CopyResultButton
+                  value={`${result.years} years, ${result.months} months, ${result.days} days | Total days lived: ${result.totalDays} | Next birthday in: ${result.nextBirthdayDays} days`}
+                />
               </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-center">
-                <div className="bg-white dark:bg-slate-800 p-4 rounded-xl shadow-sm hover:-translate-y-1 transition-transform">
-                  <div className="text-sm font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Total Days Lived</div>
-                  <div className="text-2xl font-bold text-slate-900 dark:text-white">{result.totalDays.toLocaleString()}</div>
-                </div>
-                <div className="bg-white dark:bg-slate-800 p-4 rounded-xl shadow-sm hover:-translate-y-1 transition-transform">
-                  <div className="text-sm font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Next Birthday In</div>
-                  <div className="text-2xl font-bold text-slate-900 dark:text-white">{result.nextBirthdayDays} days</div>
-                </div>
+
+              <div className="mb-6 grid grid-cols-3 gap-4">
+                <StatCard label="Years" value={result.years} highlight />
+                <StatCard label="Months" value={result.months} highlight />
+                <StatCard label="Days" value={result.days} highlight />
+              </div>
+
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <StatCard label="Total Days Lived" value={result.totalDays.toLocaleString()} />
+                <StatCard label="Next Birthday In" value={`${result.nextBirthdayDays} days`} />
               </div>
             </div>
           )}
         </div>
 
-        <SEOBlock
-          title="FreeAge Calculator"
-          description={[
-            "Our online Age Calculator is a precise tool designed to help you calculate your exact age from your date of birth. Whether you need to know your age in years, months, and days for official documents, or you're simply curious about the total number of days you've lived, this tool provides instant and accurate results.",
-            "Using an exact age calculator eliminates the need for manual calculations, ensuring you get error-free results every time. It's perfect for calculating age for admission forms, passport applications, or tracking milestones."
-          ]}
-          howToUse={[
-            "Select your Date of Birth using the calendar input.",
-            "The Current Date is automatically selected, but you can change it to calculate age at a specific point in the past or future.",
-            "The calculator will instantly display your exact age in years, months, and days.",
-            "You can also view your total days lived and the countdown to your next birthday."
-          ]}
-          formulas={[
-            { title: "Age Calculation Logic", formula: "Current Date - Date of Birth (accounting for leap years and varying month lengths)" }
-          ]}
-          examples={[
-            { question: "If born on Jan 1, 2000, what is the age on Jan 1, 2024?", calculation: "24 Years, 0 Months, 0 Days" }
-          ]}
-          benefits={[
-            "100% Free and Online: Calculate age online without downloading any software.",
-            "High Precision: Get your exact age down to the day.",
-            "Instant Results: No waiting or page reloads required.",
-            "Privacy Focused: Your data is processed locally in your browser and never stored on our servers."
-          ]}
-          faq={[
-            {
-              question: "How is my exact age calculated?",
-              answer: "The calculator determines the difference between your date of birth and the current date, accounting for leap years and varying month lengths to provide an exact breakdown in years, months, and days."
-            },
-            {
-              question: "Can I calculate my age on a future date?",
-              answer: "Yes, simply change the \"Current Date\" field to any future date to see how old you will be at that specific time."
-            },
-            {
-              question: "Is this tool free to use?",
-              answer: "Absolutely. Our age calculator is completely free to use as many times as you need."
-            }
-          ]}
-          relatedTools={[
-            { name: "Percentage Calculator", link: "/percentage" },
-            { name: "Loan Calculator", link: "/loan" },
-            { name: "Unit Converter", link: "/converter" }
-          ]}
-        />
+        {content && <SEOBlock content={content} />}
       </div>
     </section>
+  );
+}
+
+function Field({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <label className="block">
+      <span className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">{label}</span>
+      {children}
+    </label>
+  );
+}
+
+function StatCard({
+  label,
+  value,
+  highlight = false,
+}: {
+  label: string;
+  value: string | number;
+  highlight?: boolean;
+}) {
+  return (
+    <div className="rounded-2xl border border-slate-200 bg-white p-5 text-center shadow-sm dark:border-slate-700 dark:bg-slate-900/60">
+      <div className={`text-3xl font-bold ${highlight ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-900 dark:text-white'}`}>
+        {value}
+      </div>
+      <div className="mt-1 text-xs font-semibold uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">{label}</div>
+    </div>
   );
 }

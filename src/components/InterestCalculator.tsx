@@ -1,6 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Percent } from 'lucide-react';
 import { SEOBlock } from './SEOBlock';
+import { CopyResultButton } from './CopyResultButton';
+import { getToolContent } from '../lib/toolContent';
 
 export function InterestCalculator() {
   const [principal, setPrincipal] = useState<number | ''>('');
@@ -8,8 +10,10 @@ export function InterestCalculator() {
   const [time, setTime] = useState<number | ''>('');
   const [timeUnit, setTimeUnit] = useState<'years' | 'months'>('years');
   const [interestType, setInterestType] = useState<'simple' | 'compound'>('simple');
-  const [compoundFrequency, setCompoundFrequency] = useState<number>(12); // Default to monthly
+  const [compoundFrequency, setCompoundFrequency] = useState<number>(12);
   const [result, setResult] = useState<{ totalInterest: number; totalAmount: number } | null>(null);
+
+  const content = getToolContent('interest');
 
   useEffect(() => {
     if (principal && rate && time) {
@@ -26,176 +30,166 @@ export function InterestCalculator() {
 
     if (P <= 0 || R <= 0 || T <= 0) return;
 
-    let totalAmount = 0;
-    let totalInterest = 0;
-
     if (interestType === 'simple') {
-      totalInterest = P * R * T;
-      totalAmount = P + totalInterest;
-    } else {
-      const n = compoundFrequency;
-      totalAmount = P * Math.pow(1 + R / n, n * T);
-      totalInterest = totalAmount - P;
+      const totalInterest = P * R * T;
+      setResult({ totalInterest, totalAmount: P + totalInterest });
+      return;
     }
 
-    setResult({ totalInterest, totalAmount });
+    const n = compoundFrequency;
+    const totalAmount = P * Math.pow(1 + R / n, n * T);
+    setResult({ totalInterest: totalAmount - P, totalAmount });
   };
+
+  const formatCurrency = (value: number) =>
+    value.toLocaleString('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 2 });
 
   return (
     <section id="interest" className="py-16 transition-colors duration-300">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="p-2 bg-indigo-100 dark:bg-indigo-900/50 rounded-lg text-indigo-600 dark:text-indigo-400">
+      <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
+        <div className="mb-4 flex items-center gap-3">
+          <div className="rounded-2xl bg-indigo-100 p-2 text-indigo-600 dark:bg-indigo-900/50 dark:text-indigo-400">
             <Percent size={28} />
           </div>
-          <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Interest Calculator</h1>
+          <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">Interest Calculator</h1>
         </div>
-        
-        <p className="text-lg text-slate-600 dark:text-slate-300 mb-8 max-w-3xl">
-          Calculate simple and compound interest easily with our free online Interest Calculator. Determine the total interest earned or paid on a principal amount over a specific period. Ideal for estimating investment returns or loan costs.
+
+        <p className="mb-8 max-w-3xl text-lg leading-8 text-slate-600 dark:text-slate-300">
+          Use this interest calculator online to compare simple and compound interest, estimate savings growth, and check maturity amount before investing or borrowing.
         </p>
 
-        <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm hover:shadow-md border border-slate-200 dark:border-slate-700 p-6 sm:p-8 transition-all duration-200">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-            <div className="col-span-1 md:col-span-2 flex gap-4 border-b border-slate-200 dark:border-slate-700 pb-4">
-              <button
-                onClick={() => setInterestType('simple')}
-                className={`px-4 py-2 rounded-lg font-medium transition-colors ${interestType === 'simple' ? 'bg-indigo-600 text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600'}`}
-              >
-                Simple Interest
-              </button>
-              <button
-                onClick={() => setInterestType('compound')}
-                className={`px-4 py-2 rounded-lg font-medium transition-colors ${interestType === 'compound' ? 'bg-indigo-600 text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600'}`}
-              >
-                Compound Interest
-              </button>
-            </div>
+        <div className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-800 sm:p-8">
+          <div className="mb-8 flex flex-wrap gap-3 border-b border-slate-200 pb-5 dark:border-slate-700">
+            <button
+              onClick={() => setInterestType('simple')}
+              className={`rounded-xl px-4 py-2.5 text-sm font-semibold transition ${
+                interestType === 'simple'
+                  ? 'bg-indigo-600 text-white'
+                  : 'bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-700 dark:text-slate-300 dark:hover:bg-slate-600'
+              }`}
+            >
+              Simple Interest
+            </button>
+            <button
+              onClick={() => setInterestType('compound')}
+              className={`rounded-xl px-4 py-2.5 text-sm font-semibold transition ${
+                interestType === 'compound'
+                  ? 'bg-indigo-600 text-white'
+                  : 'bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-700 dark:text-slate-300 dark:hover:bg-slate-600'
+              }`}
+            >
+              Compound Interest
+            </button>
+          </div>
 
-            <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Principal Amount</label>
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+            <Field label="Principal Amount">
               <input
                 type="number"
                 value={principal}
                 onChange={(e) => setPrincipal(e.target.value ? Number(e.target.value) : '')}
-                className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all outline-none"
+                className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 dark:border-slate-700 dark:bg-slate-900 dark:text-white"
                 placeholder="e.g. 10000"
               />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Annual Interest Rate (%)</label>
+            </Field>
+
+            <Field label="Annual Interest Rate (%)">
               <input
                 type="number"
                 value={rate}
                 onChange={(e) => setRate(e.target.value ? Number(e.target.value) : '')}
-                className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all outline-none"
-                placeholder="e.g. 5"
+                className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 dark:border-slate-700 dark:bg-slate-900 dark:text-white"
+                placeholder="e.g. 8"
               />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Time Period</label>
+            </Field>
+
+            <Field label="Time Period">
               <div className="flex">
                 <input
                   type="number"
                   value={time}
                   onChange={(e) => setTime(e.target.value ? Number(e.target.value) : '')}
-                  className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-l-xl px-4 py-3 text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all outline-none"
+                  className="w-full rounded-l-xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 dark:border-slate-700 dark:bg-slate-900 dark:text-white"
                   placeholder="e.g. 5"
                 />
                 <select
                   value={timeUnit}
                   onChange={(e) => setTimeUnit(e.target.value as 'years' | 'months')}
-                  className="bg-slate-100 dark:bg-slate-700 border border-l-0 border-slate-200 dark:border-slate-700 rounded-r-xl px-4 py-3 text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all outline-none"
+                  className="rounded-r-xl border border-l-0 border-slate-200 bg-slate-100 px-4 py-3 text-slate-900 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 dark:border-slate-700 dark:bg-slate-700 dark:text-white"
                 >
                   <option value="years">Years</option>
                   <option value="months">Months</option>
                 </select>
               </div>
-            </div>
+            </Field>
 
             {interestType === 'compound' && (
-              <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Compound Frequency</label>
+              <Field label="Compound Frequency">
                 <select
                   value={compoundFrequency}
                   onChange={(e) => setCompoundFrequency(Number(e.target.value))}
-                  className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all outline-none"
+                  className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 dark:border-slate-700 dark:bg-slate-900 dark:text-white"
                 >
-                  <option value={1}>Annually (1/yr)</option>
-                  <option value={2}>Semi-Annually (2/yr)</option>
-                  <option value={4}>Quarterly (4/yr)</option>
-                  <option value={12}>Monthly (12/yr)</option>
-                  <option value={365}>Daily (365/yr)</option>
+                  <option value={1}>Annually</option>
+                  <option value={2}>Semi-annually</option>
+                  <option value={4}>Quarterly</option>
+                  <option value={12}>Monthly</option>
+                  <option value={365}>Daily</option>
                 </select>
-              </div>
+              </Field>
             )}
           </div>
 
           {result && (
-            <div className="bg-indigo-50 dark:bg-indigo-900/20 rounded-2xl p-6 border border-indigo-100 dark:border-indigo-800/50 animate-in zoom-in duration-300">
-              <h2 className="text-xl font-semibold text-slate-900 dark:text-white mb-6 text-center">Interest Summary</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-center">
-                <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm hover:-translate-y-1 transition-transform">
-                  <div className="text-sm font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">Total Interest Earned</div>
-                  <div className="text-3xl font-bold text-indigo-600 dark:text-indigo-400">
-                    {result.totalInterest.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}
-                  </div>
+            <div className="mt-8 rounded-[1.75rem] border border-indigo-100 bg-gradient-to-br from-indigo-50 via-white to-slate-50 p-6 dark:border-indigo-800/50 dark:from-indigo-900/20 dark:via-slate-800 dark:to-slate-800">
+              <div className="mb-6 flex flex-col items-center justify-between gap-4 border-b border-slate-200 pb-6 text-center dark:border-slate-700 md:flex-row md:text-left">
+                <div>
+                  <h2 className="text-xl font-semibold text-slate-900 dark:text-white">Interest Summary</h2>
+                  <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Interest earned and maturity amount in one view.</p>
                 </div>
-                <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm hover:-translate-y-1 transition-transform">
-                  <div className="text-sm font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">Total Amount</div>
-                  <div className="text-2xl font-bold text-slate-900 dark:text-white">
-                    {result.totalAmount.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}
-                  </div>
-                </div>
+                <CopyResultButton
+                  value={`Interest: ${formatCurrency(result.totalInterest)} | Total Amount: ${formatCurrency(result.totalAmount)}`}
+                />
+              </div>
+
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <MetricCard label="Total Interest" value={formatCurrency(result.totalInterest)} highlight />
+                <MetricCard label="Total Amount" value={formatCurrency(result.totalAmount)} />
               </div>
             </div>
           )}
         </div>
 
-        <SEOBlock
-          title="Interest Calculator"
-          description={[
-            "Our free online Interest Calculator helps you determine the interest earned or paid on a principal amount over a specific period. It supports both simple and compound interest calculations.",
-            "Whether you're calculating returns on an investment, estimating savings growth, or understanding the cost of a loan, this tool provides accurate and instant results."
-          ]}
-          howToUse={[
-            "Select the type of interest: Simple or Compound.",
-            "Enter the Principal Amount (initial investment or loan amount).",
-            "Input the Annual Interest Rate (%).",
-            "Specify the Time Period in years or months.",
-            "If using Compound Interest, select the compounding frequency (e.g., annually, monthly, daily).",
-            "Review the Total Interest Earned and Total Amount instantly."
-          ]}
-          formulas={[
-            { title: "Simple Interest", formula: "I = P × R × T" },
-            { title: "Compound Interest", formula: "A = P(1 + r/n)^(nt)" }
-          ]}
-          examples={[
-            { question: "Simple Interest on $1,000 at 5% for 2 years", calculation: "I = 1000 × 0.05 × 2 = $100" },
-            { question: "Compound Interest on $1,000 at 5% compounded annually for 2 years", calculation: "A = 1000(1 + 0.05/1)^(1×2) = $1,102.50" }
-          ]}
-          benefits={[
-            "Versatile: Supports both simple and compound interest.",
-            "Flexible: Choose different compounding frequencies (annually, monthly, daily, etc.).",
-            "Accurate: Uses standard mathematical formulas for precise calculations.",
-            "Instant Results: See the total interest and amount immediately as you type."
-          ]}
-          faq={[
-            {
-              question: "What is the difference between simple and compound interest?",
-              answer: "Simple interest is calculated only on the principal amount. Compound interest is calculated on the principal amount and also on the accumulated interest of previous periods."
-            },
-            {
-              question: "How does compounding frequency affect the total interest?",
-              answer: "The more frequently interest is compounded (e.g., daily vs. annually), the higher the total interest earned or paid will be."
-            }
-          ]}
-          relatedTools={[
-            { name: "Loan Calculator", link: "/loan" },
-            { name: "Percentage Calculator", link: "/percentage" }
-          ]}
-        />
+        {content && <SEOBlock content={content} />}
       </div>
     </section>
+  );
+}
+
+function Field({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <label className="block">
+      <span className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">{label}</span>
+      {children}
+    </label>
+  );
+}
+
+function MetricCard({
+  label,
+  value,
+  highlight = false,
+}: {
+  label: string;
+  value: string;
+  highlight?: boolean;
+}) {
+  return (
+    <div className="rounded-2xl border border-slate-200 bg-white p-6 text-center shadow-sm dark:border-slate-700 dark:bg-slate-900/60">
+      <div className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">{label}</div>
+      <div className={`mt-2 text-3xl font-bold ${highlight ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-900 dark:text-white'}`}>
+        {value}
+      </div>
+    </div>
   );
 }

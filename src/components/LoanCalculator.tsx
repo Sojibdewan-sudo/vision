@@ -1,13 +1,23 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Landmark } from 'lucide-react';
 import { SEOBlock } from './SEOBlock';
+import { CopyResultButton } from './CopyResultButton';
+import { getToolContent } from '../lib/toolContent';
 
 export function LoanCalculator() {
   const [principal, setPrincipal] = useState<number | ''>('');
   const [rate, setRate] = useState<number | ''>('');
   const [tenure, setTenure] = useState<number | ''>('');
   const [tenureType, setTenureType] = useState<'years' | 'months'>('years');
-  const [result, setResult] = useState<{ emi: number; totalPayment: number; totalInterest: number; principalPercentage: number; interestPercentage: number } | null>(null);
+  const [result, setResult] = useState<{
+    emi: number;
+    totalPayment: number;
+    totalInterest: number;
+    principalPercentage: number;
+    interestPercentage: number;
+  } | null>(null);
+
+  const content = getToolContent('loan');
 
   useEffect(() => {
     if (principal && rate && tenure) {
@@ -28,161 +38,143 @@ export function LoanCalculator() {
     const totalPayment = emi * N;
     const totalInterest = totalPayment - P;
 
-    const principalPercentage = (P / totalPayment) * 100;
-    const interestPercentage = (totalInterest / totalPayment) * 100;
-
-    setResult({ emi, totalPayment, totalInterest, principalPercentage, interestPercentage });
+    setResult({
+      emi,
+      totalPayment,
+      totalInterest,
+      principalPercentage: (P / totalPayment) * 100,
+      interestPercentage: (totalInterest / totalPayment) * 100,
+    });
   };
+
+  const formatCurrency = (value: number) =>
+    value.toLocaleString('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 2 });
 
   return (
     <section id="loan" className="py-16 transition-colors duration-300">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="p-2 bg-indigo-100 dark:bg-indigo-900/50 rounded-lg text-indigo-600 dark:text-indigo-400">
+      <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
+        <div className="mb-4 flex items-center gap-3">
+          <div className="rounded-2xl bg-indigo-100 p-2 text-indigo-600 dark:bg-indigo-900/50 dark:text-indigo-400">
             <Landmark size={28} />
           </div>
-          <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Loan Calculator</h1>
+          <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">Loan Calculator</h1>
         </div>
-        
-        <p className="text-lg text-slate-600 dark:text-slate-300 mb-8 max-w-3xl">
-          Plan your finances effectively with our free online Loan Calculator. Calculate your Equated Monthly Installment (EMI), total interest payable, and the overall cost of your loan. Perfect for home loans, car loans, and personal loans.
+
+        <p className="mb-8 max-w-3xl text-lg leading-8 text-slate-600 dark:text-slate-300">
+          Use this loan calculator online to estimate EMI, total repayment, and total interest for home, car, or personal loans. It works well for monthly installment checks and EMI calculator BD style comparisons.
         </p>
 
-        <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm hover:shadow-md border border-slate-200 dark:border-slate-700 p-6 sm:p-8 transition-all duration-200">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Loan Amount</label>
+        <div className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-800 sm:p-8">
+          <div className="mb-8 grid grid-cols-1 gap-6 md:grid-cols-3">
+            <Field label="Loan Amount">
               <input
                 type="number"
                 value={principal}
                 onChange={(e) => setPrincipal(e.target.value ? Number(e.target.value) : '')}
-                className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all outline-none"
-                placeholder="e.g. 1000000"
+                className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 dark:border-slate-700 dark:bg-slate-900 dark:text-white"
+                placeholder="e.g. 500000"
               />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Interest Rate (% p.a.)</label>
+            </Field>
+
+            <Field label="Interest Rate (% p.a.)">
               <input
                 type="number"
                 value={rate}
                 onChange={(e) => setRate(e.target.value ? Number(e.target.value) : '')}
-                className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all outline-none"
-                placeholder="e.g. 9.5"
+                className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 dark:border-slate-700 dark:bg-slate-900 dark:text-white"
+                placeholder="e.g. 10"
               />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Tenure</label>
+            </Field>
+
+            <Field label="Tenure">
               <div className="flex">
                 <input
                   type="number"
                   value={tenure}
                   onChange={(e) => setTenure(e.target.value ? Number(e.target.value) : '')}
-                  className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-l-xl px-4 py-3 text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all outline-none"
-                  placeholder="e.g. 10"
+                  className="w-full rounded-l-xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 dark:border-slate-700 dark:bg-slate-900 dark:text-white"
+                  placeholder="e.g. 5"
                 />
                 <select
                   value={tenureType}
                   onChange={(e) => setTenureType(e.target.value as 'years' | 'months')}
-                  className="bg-slate-100 dark:bg-slate-700 border border-l-0 border-slate-200 dark:border-slate-700 rounded-r-xl px-4 py-3 text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all outline-none"
+                  className="rounded-r-xl border border-l-0 border-slate-200 bg-slate-100 px-4 py-3 text-slate-900 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 dark:border-slate-700 dark:bg-slate-700 dark:text-white"
                 >
                   <option value="years">Years</option>
                   <option value="months">Months</option>
                 </select>
               </div>
-            </div>
+            </Field>
           </div>
 
           {result && (
-            <div className="bg-indigo-50 dark:bg-indigo-900/20 rounded-2xl p-6 border border-indigo-100 dark:border-indigo-800/50 animate-in zoom-in duration-300">
-              <h2 className="text-xl font-semibold text-slate-900 dark:text-white mb-6 text-center">Loan Summary</h2>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-center mb-8">
-                <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm hover:-translate-y-1 transition-transform">
-                  <div className="text-sm font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">Monthly EMI</div>
-                  <div className="text-3xl font-bold text-indigo-600 dark:text-indigo-400">
-                    {result.emi.toLocaleString('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 })}
-                  </div>
+            <div className="rounded-[1.75rem] border border-indigo-100 bg-gradient-to-br from-indigo-50 via-white to-slate-50 p-6 dark:border-indigo-800/50 dark:from-indigo-900/20 dark:via-slate-800 dark:to-slate-800">
+              <div className="mb-6 flex flex-col items-center justify-between gap-4 border-b border-slate-200 pb-6 text-center dark:border-slate-700 md:flex-row md:text-left">
+                <div>
+                  <h2 className="text-xl font-semibold text-slate-900 dark:text-white">Loan Summary</h2>
+                  <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Clear monthly EMI and full borrowing cost.</p>
                 </div>
-                <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm hover:-translate-y-1 transition-transform">
-                  <div className="text-sm font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">Total Interest</div>
-                  <div className="text-2xl font-bold text-slate-900 dark:text-white">
-                    {result.totalInterest.toLocaleString('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 })}
-                  </div>
-                </div>
-                <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm hover:-translate-y-1 transition-transform">
-                  <div className="text-sm font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">Total Payable</div>
-                  <div className="text-2xl font-bold text-slate-900 dark:text-white">
-                    {result.totalPayment.toLocaleString('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 })}
-                  </div>
-                </div>
+                <CopyResultButton
+                  value={`EMI: ${formatCurrency(result.emi)} | Interest: ${formatCurrency(result.totalInterest)} | Total: ${formatCurrency(result.totalPayment)}`}
+                />
               </div>
 
-              <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm">
-                <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">Breakdown</h3>
-                <div className="w-full h-4 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden flex mb-4">
-                  <div className="h-full bg-indigo-500" style={{ width: `${result.principalPercentage}%` }}></div>
-                  <div className="h-full bg-amber-500" style={{ width: `${result.interestPercentage}%` }}></div>
+              <div className="mb-8 grid grid-cols-1 gap-4 md:grid-cols-3">
+                <MetricCard label="Monthly EMI" value={formatCurrency(result.emi)} highlight />
+                <MetricCard label="Total Interest" value={formatCurrency(result.totalInterest)} />
+                <MetricCard label="Total Payable" value={formatCurrency(result.totalPayment)} />
+              </div>
+
+              <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-700 dark:bg-slate-900/60">
+                <div className="mb-3 flex items-center justify-between gap-4">
+                  <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Breakdown</h3>
+                  <span className="text-sm text-slate-500 dark:text-slate-400">
+                    Principal vs interest share
+                  </span>
                 </div>
-                <div className="flex justify-between text-sm">
-                  <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-full bg-indigo-500"></div>
-                    <span className="text-slate-600 dark:text-slate-300">Principal ({result.principalPercentage.toFixed(1)}%)</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-full bg-amber-500"></div>
-                    <span className="text-slate-600 dark:text-slate-300">Interest ({result.interestPercentage.toFixed(1)}%)</span>
-                  </div>
+                <div className="mb-4 flex h-4 overflow-hidden rounded-full bg-slate-200 dark:bg-slate-700">
+                  <div className="bg-indigo-500" style={{ width: `${result.principalPercentage}%` }} />
+                  <div className="bg-amber-500" style={{ width: `${result.interestPercentage}%` }} />
+                </div>
+                <div className="flex flex-col gap-3 text-sm text-slate-600 dark:text-slate-300 sm:flex-row sm:justify-between">
+                  <span>Principal: {result.principalPercentage.toFixed(1)}%</span>
+                  <span>Interest: {result.interestPercentage.toFixed(1)}%</span>
                 </div>
               </div>
             </div>
           )}
         </div>
 
-        <SEOBlock
-          title="Loan Calculator"
-          description={[
-            "Our comprehensive Loan Calculator is designed to give you a complete picture of your borrowing costs. Beyond just calculating your EMI, it provides a detailed breakdown of the total interest payable and visually represents the ratio of principal to interest over the life of your loan.",
-            "Whether you are comparing different loan options or planning your long-term finances, this tool helps you understand exactly how much your loan will cost you in the long run."
-          ]}
-          howToUse={[
-            "Enter the total Loan Amount you wish to borrow.",
-            "Input the annual Interest Rate provided by your lender.",
-            "Specify the loan Tenure in either years or months.",
-            "Review your Monthly EMI, Total Interest, Total Payable amount, and the visual breakdown chart."
-          ]}
-          formulas={[
-            { title: "EMI Calculation", formula: "E = P × r × (1 + r)^n / ((1 + r)^n - 1)" },
-            { title: "Variables", formula: "E is EMI, P is Principal, r is monthly interest rate (annual rate/12/100), n is tenure in months" }
-          ]}
-          examples={[
-            { question: "Loan of ₹1,00,000 at 10% for 1 year", calculation: "EMI = ₹8,792, Total Interest = ₹5,499" }
-          ]}
-          benefits={[
-            "Visual Insights: The progress bar clearly shows how much of your payment goes towards interest versus the principal.",
-            "Better Decisions: Compare different loan scenarios to find the most cost-effective option.",
-            "Accurate Results: Uses the standard mathematical formula for precise calculations.",
-            "Time-Saving: Avoid complex manual math and get instant answers."
-          ]}
-          faq={[
-            {
-              question: "Why is the total interest so high?",
-              answer: "In the early years of a loan, a larger portion of your EMI goes towards paying off the interest rather than the principal. Over a long tenure, this can add up significantly."
-            },
-            {
-              question: "How can I reduce my total interest?",
-              answer: "You can reduce your total interest by choosing a shorter loan tenure, negotiating a lower interest rate, or making prepayments towards your principal amount."
-            },
-            {
-              question: "Is this calculator suitable for mortgages?",
-              answer: "Yes, this calculator is perfect for home loans (mortgages), car loans, and personal loans that use a reducing balance interest calculation."
-            }
-          ]}
-          relatedTools={[
-            { name: "Interest Calculator", link: "/interest" },
-            { name: "Percentage Calculator", link: "/percentage" },
-            { name: "Age Calculator", link: "/age" }
-          ]}
-        />
+        {content && <SEOBlock content={content} />}
       </div>
     </section>
+  );
+}
+
+function Field({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <label className="block">
+      <span className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">{label}</span>
+      {children}
+    </label>
+  );
+}
+
+function MetricCard({
+  label,
+  value,
+  highlight = false,
+}: {
+  label: string;
+  value: string;
+  highlight?: boolean;
+}) {
+  return (
+    <div className="rounded-2xl border border-slate-200 bg-white p-5 text-center shadow-sm dark:border-slate-700 dark:bg-slate-900/60">
+      <div className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">{label}</div>
+      <div className={`mt-2 text-3xl font-bold ${highlight ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-900 dark:text-white'}`}>
+        {value}
+      </div>
+    </div>
   );
 }

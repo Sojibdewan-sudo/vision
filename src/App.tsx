@@ -6,6 +6,7 @@ import { Footer } from './components/Footer';
 import { AdPlaceholder } from './components/AdPlaceholder';
 import { AboutUs, TermsConditions, PrivacyPolicy } from './components/LegalPages';
 import { updateSEO } from './lib/seo';
+import { ADS_ENABLED } from './config';
 
 // Lazy load heavy components
 const PercentageCalculator = React.lazy(() => import('./components/PercentageCalculator').then(m => ({ default: m.PercentageCalculator })));
@@ -20,6 +21,28 @@ const WordCounter = React.lazy(() => import('./components/WordCounter').then(m =
 
 export default function App() {
   const location = useLocation();
+  const gaId = import.meta.env.VITE_GA_ID;
+
+  useEffect(() => {
+    if (!gaId || typeof window === 'undefined') return;
+
+    if (!(window as any).gtag) {
+      const existingScript = document.querySelector(`script[data-ga="${gaId}"]`);
+      if (!existingScript) {
+        const script = document.createElement('script');
+        script.async = true;
+        script.src = `https://www.googletagmanager.com/gtag/js?id=${gaId}`;
+        script.dataset.ga = gaId;
+        document.head.appendChild(script);
+      }
+
+      (window as any).dataLayer = (window as any).dataLayer || [];
+      (window as any).gtag = function gtag(...args: unknown[]) {
+        (window as any).dataLayer.push(args);
+      };
+      (window as any).gtag('js', new Date());
+    }
+  }, [gaId]);
 
   useEffect(() => {
     // Map pathnames to SEO keys
@@ -43,25 +66,23 @@ export default function App() {
     window.scrollTo({ top: 0, behavior: "smooth" });
 
     // Track page view in GA
-    if (typeof window !== 'undefined' && (window as any).gtag) {
-      const gaId = import.meta.env.VITE_GA_ID;
-      if (gaId) {
-        (window as any).gtag('config', gaId, {
-          page_path: location.pathname + location.search
-        });
-      }
+    if (typeof window !== 'undefined' && gaId && (window as any).gtag) {
+      (window as any).gtag('config', gaId, {
+        page_path: location.pathname + location.search
+      });
     }
-  }, [location]);
+  }, [gaId, location]);
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 font-sans transition-colors duration-200 ease-in-out flex flex-col">
       <Navbar />
       
       <main className="flex-grow flex flex-col">
-        {/* Top banner ad */}
-        <div className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 mt-4">
-          <AdPlaceholder className="h-24" text="Top Banner Advertisement" />
-        </div>
+        {ADS_ENABLED && (
+          <div className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 mt-4">
+            <AdPlaceholder className="h-24" text="Top Banner Advertisement" />
+          </div>
+        )}
 
         <div className="flex-grow animate-in fade-in duration-500">
           <Suspense fallback={<div className="py-16 text-center">Loading...</div>}>
@@ -89,16 +110,14 @@ export default function App() {
         </div>
       </main>
 
-      {/* Footer ad */}
-      <div className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 mb-4">
-        <AdPlaceholder className="h-24" text="Footer Advertisement" />
-      </div>
+      {ADS_ENABLED && (
+        <div className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 mb-4">
+          <AdPlaceholder className="h-24" text="Footer Advertisement" />
+        </div>
+      )}
 
       <Footer />
     </div>
   );
 }
-
-
-
 
